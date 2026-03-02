@@ -121,11 +121,26 @@ function loadVideo() {
         return;
     }
     const currentVideo = videosDB[currentVideoIndex];
-    // Evita recargar el mismo iframe si ya está cargado
-const newSrc = `https://www.youtube-nocookie.com/embed/${currentVideo.youtube_id}?rel=0`;
+    
+    // 1. Extraemos el ID mágico sin importar cómo pegaste el link en la base de datos
+    let videoId = currentVideo.youtube_id_recortado || currentVideo.youtube_id;
+    
+    // Si detecta que pegaste una URL completa, la recorta y saca solo el ID
+    if (videoId.includes('youtube.com') || videoId.includes('youtu.be')) {
+        const match = videoId.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/))([\w-]{11})/);
+        if (match) {
+            videoId = match[1];
+        }
+    }
+
+    // 2. Generamos el link de embed clásico y limpio
+    const newSrc = `https://www.youtube.com/embed/${videoId}?rel=0`;
+    
+    // 3. Evitamos recargar si es el mismo
     if(youtubePlayer.src !== newSrc) {
         youtubePlayer.src = newSrc;
     }
+    
     videoInfo.innerText = `Ronda ${currentVideoIndex + 1}: ${currentVideo.partido} (${currentVideo.torneo})`;
 }
 
