@@ -19,7 +19,7 @@ const videosDB = [
     "torneo": "Campeonato 2019"
   },
     {
-    "id": 2,
+    "id": 3,
     "youtube_id_recortado": "UjO9FNTkULo", // El video misterioso
     "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
     "goleador": "Esteban Paredes",
