@@ -214,5 +214,23 @@ document.getElementById('reset-game-btn').addEventListener('click', () => {
     }
 });
 
+
+document.getElementById('save-scores-btn').addEventListener('click', () => {
+    players.forEach((p, index) => {
+        const hitGoleador = document.getElementById(`goleador-${index}`).checked;
+        const hitMarcador = document.getElementById(`marcador-${index}`).checked;
+        
+        if (hitGoleador) p.score += 1;
+        if (hitMarcador) p.score += 2;
+    });
+    
+    saveState();
+    renderRanking();
+    scoreModal.classList.add('hidden');
+    
+    // Aparece el botón de revelar gol
+    document.getElementById('reveal-video-btn').classList.remove('hidden');
+});
+
 // Arrancar el código al cargar
 init();
