@@ -111,7 +111,7 @@ function loadVideo() {
     }
     const currentVideo = videosDB[currentVideoIndex];
     // Evita recargar el mismo iframe si ya está cargado
-    const newSrc = `https://www.youtube.com/embed/${currentVideo.youtube_id}?rel=0`;
+const newSrc = `https://www.youtube-nocookie.com/embed/${currentVideo.youtube_id}?rel=0`;
     if(youtubePlayer.src !== newSrc) {
         youtubePlayer.src = newSrc;
     }
