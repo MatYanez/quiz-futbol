@@ -1,31 +1,31 @@
 // --- 1. BASE DE DATOS DE VIDEOS ---
 const videosDB = [
-  {
-"id": 1,
-    "youtube_id_recortado": "UjO9FNTkULo", // El video misterioso
-    "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
-    "goleador": "Esteban Paredes",
-    "resultado": "3-2",
-    "partido": "Colo vs U. de Chile",
-    "torneo": "Campeonato 2019"
+{
+    "id": 1, 
+    "youtube_id_recortado": "bajOQF-YG5g", // La URL de tu video de 8 segundos
+    "youtube_id_completo": "UjO9FNTkULo", // La URL de tu SEGUNDO video (el completo)
+    "goleador": "Jugador X",
+    "resultado": "X-X",
+    "partido": "Equipo A vs Equipo B",
+    "torneo": "Torneo X"
   },
   {
     "id": 2,
-    "youtube_id_recortado": "UjO9FNTkULo", // El video misterioso
-    "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
-    "goleador": "Esteban Paredes",
-    "resultado": "3-2",
-    "partido": "Colo vs U. de Chile",
-    "torneo": "Campeonato 2019"
+    "youtube_id_recortado": "bajOQF-YG5g", // La URL de tu video de 8 segundos
+    "youtube_id_completo": "UjO9FNTkULo", // La URL de tu SEGUNDO video (el completo)
+    "goleador": "Jugador X",
+    "resultado": "X-X",
+    "partido": "Equipo A vs Equipo B",
+    "torneo": "Torneo X"
   },
     {
     "id": 3,
-    "youtube_id_recortado": "UjO9FNTkULo", // El video misterioso
-    "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
-    "goleador": "Esteban Paredes",
-    "resultado": "3-2",
-    "partido": "hile",
-    "torneo": "Campeonato 2019"
+    "youtube_id_recortado": "bajOQF-YG5g", // La URL de tu video de 8 segundos
+    "youtube_id_completo": "UjO9FNTkULo", // La URL de tu SEGUNDO video (el completo)
+    "goleador": "Jugador X",
+    "resultado": "X-X",
+    "partido": "Equipo A vs Equipo B",
+    "torneo": "Torneo X"
   }
 ];
 
