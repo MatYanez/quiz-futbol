@@ -2,7 +2,7 @@
 const videosDB = [
   {
 "id": 1,
-    "youtube_id_recortado": "bajOQF-YG5g", // El video misterioso
+    "youtube_id_recortado": "UjO9FNTkULo", // El video misterioso
     "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
     "goleador": "Esteban Paredes",
     "resultado": "3-2",
@@ -11,7 +11,7 @@ const videosDB = [
   },
   {
     "id": 2,
-    "youtube_id_recortado": "bajOQF-YG5g", // El video misterioso
+    "youtube_id_recortado": "UjO9FNTkULo", // El video misterioso
     "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
     "goleador": "Esteban Paredes",
     "resultado": "3-2",
@@ -20,7 +20,7 @@ const videosDB = [
   },
     {
     "id": 2,
-    "youtube_id_recortado": "bajOQF-YG5g", // El video misterioso
+    "youtube_id_recortado": "UjO9FNTkULo", // El video misterioso
     "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
     "goleador": "Esteban Paredes",
     "resultado": "3-2",
