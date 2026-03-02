@@ -1,20 +1,31 @@
 // --- 1. BASE DE DATOS DE VIDEOS ---
 const videosDB = [
   {
-    "id": 1,
-    "youtube_id": "bajOQF-YG5g", 
-    "goleador": "juanfer quintero",
+"id": 1,
+    "youtube_id_recortado": "bajOQF-YG5g", // El video misterioso
+    "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
+    "goleador": "Esteban Paredes",
     "resultado": "3-2",
-    "partido": "Colo-Colo vs U. de Chile",
-    "torneo": "Campeonato Nacional 2019"
+    "partido": "Colo vs U. de Chile",
+    "torneo": "Campeonato 2019"
   },
   {
     "id": 2,
-    "youtube_id": "UjO9FNTkULo",
-    "goleador": "Matías Fernández",
-    "resultado": "1-2",
-    "partido": "Toluca vs Colo-Colo",
-    "torneo": "Copa Sudamericana 2006"
+    "youtube_id_recortado": "bajOQF-YG5g", // El video misterioso
+    "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
+    "goleador": "Esteban Paredes",
+    "resultado": "3-2",
+    "partido": "Colo vs U. de Chile",
+    "torneo": "Campeonato 2019"
+  },
+    {
+    "id": 2,
+    "youtube_id_recortado": "bajOQF-YG5g", // El video misterioso
+    "youtube_id_completo": "UjO9FNTkULo",  // El golazo con celebración y todo
+    "goleador": "Esteban Paredes",
+    "resultado": "3-2",
+    "partido": "hile",
+    "torneo": "Campeonato 2019"
   }
 ];
 
