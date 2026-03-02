@@ -2,7 +2,7 @@
 const videosDB = [
   {
     "id": 1,
-    "youtube_id": "nCXr2Of92RQ", 
+    "youtube_id": "bajOQF-YG5g", 
     "goleador": "juanfer quintero",
     "resultado": "3-2",
     "partido": "Colo-Colo vs U. de Chile",
@@ -10,7 +10,7 @@ const videosDB = [
   },
   {
     "id": 2,
-    "youtube_id": "zj-cpY6fbJg",
+    "youtube_id": "UjO9FNTkULo",
     "goleador": "Matías Fernández",
     "resultado": "1-2",
     "partido": "Toluca vs Colo-Colo",
