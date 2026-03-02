@@ -11,14 +11,11 @@
 
     <div id="lobby-screen" class="max-w-md mx-auto bg-gray-800 p-6 rounded-xl shadow-lg mt-10">
         <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">Lobby del Juego</h1>
-        
         <div class="flex mb-4">
             <input type="text" id="player-name" placeholder="Nombre del jugador" class="flex-1 p-2 rounded-l-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button id="add-player-btn" class="bg-blue-600 hover:bg-blue-500 px-4 rounded-r-lg font-bold transition">+</button>
         </div>
-
         <ul id="players-list" class="mb-6 space-y-2"></ul>
-
         <button id="start-game-btn" class="w-full bg-green-600 hover:bg-green-500 py-3 rounded-lg font-bold text-lg transition hidden">Iniciar Juego</button>
     </div>
 
@@ -26,15 +23,15 @@
         
         <div class="flex-1 flex flex-col gap-4">
             <div class="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg border border-gray-700">
-              <iframe id="youtube-player" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                <iframe id="youtube-player" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
             </div>
 
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex justify-between items-center">
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
                 <div>
                     <h2 class="text-xl font-bold text-blue-400">Panel Maestro</h2>
                     <p id="video-info" class="text-sm text-gray-400">Ronda actual...</p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <button id="open-modal-btn" class="bg-yellow-600 hover:bg-yellow-500 px-4 py-2 rounded font-bold transition text-sm md:text-base">Asignar Ganadores</button>
                     <button id="reveal-video-btn" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded font-bold transition text-sm md:text-base hidden">Revelar Gol Completo</button>
                     <button id="next-video-btn" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-bold transition text-sm md:text-base">Siguiente Video</button>
