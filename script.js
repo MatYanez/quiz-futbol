@@ -3,7 +3,7 @@ const videosDB = [
     {
         id: 1,
         youtube_id_recortado: "bajOQF-YG5g", // Corregido: sin comillas erróneas en las variables
-        youtube_id_completo: "PON_AQUI_EL_ID_COMPLETO", 
+        youtube_id_completo: "UjO9FNTkULo", 
         goleador: "Jugador X",
         resultado: "X-X",
         partido: "Equipo A vs Equipo B",
@@ -11,8 +11,8 @@ const videosDB = [
     },
     {
         id: 2,
-        youtube_id_recortado: "https://www.youtube.com/watch?v=7tN223Lp0yQ", 
-        youtube_id_completo: "https://youtu.be/H62b1uDqFvY", 
+        youtube_id_recortado: "bajOQF-YG5g", // Corregido: sin comillas erróneas en las variables
+        youtube_id_completo: "UjO9FNTkULo", 
         goleador: "Esteban Paredes",
         resultado: "3-2",
         partido: "Colo-Colo vs U. de Chile",
