@@ -1,21 +1,21 @@
 // --- 1. BASE DE DATOS DE VIDEOS ---
 const videosDB = [
-    {
-        id: 1,
-        youtube_id: "7tN223Lp0yQ", // Ejemplo: Golazo Paredes a la U
-        goleador: "Esteban Paredes",
-        resultado: "3-2",
-        partido: "Colo-Colo vs U. de Chile",
-        torneo: "Campeonato 2019"
-    },
-    {
-        id: 2,
-        youtube_id: "H62b1uDqFvY", // Ejemplo: Matigol
-        goleador: "Matías Fernández",
-        resultado: "1-2",
-        partido: "Toluca vs Colo-Colo",
-        torneo: "Copa Sudamericana 2006"
-    }
+  {
+    "id": 1,
+    "youtube_id": "nCXr2Of92RQ", 
+    "goleador": "juanfer quintero",
+    "resultado": "3-2",
+    "partido": "Colo-Colo vs U. de Chile",
+    "torneo": "Campeonato Nacional 2019"
+  },
+  {
+    "id": 2,
+    "youtube_id": "zj-cpY6fbJg",
+    "goleador": "Matías Fernández",
+    "resultado": "1-2",
+    "partido": "Toluca vs Colo-Colo",
+    "torneo": "Copa Sudamericana 2006"
+  }
 ];
 
 // --- 2. VARIABLES Y ESTADO ---
