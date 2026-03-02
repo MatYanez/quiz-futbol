@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina el Gol - Master Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-white font-sans antialiased p-4 md:p-8 min-h-screen">
+
+    <div id="lobby-screen" class="max-w-md mx-auto bg-gray-800 p-6 rounded-xl shadow-lg mt-10">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">Lobby del Juego</h1>
+        
+        <div class="flex mb-4">
+            <input type="text" id="player-name" placeholder="Nombre del jugador" class="flex-1 p-2 rounded-l-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="add-player-btn" class="bg-blue-600 hover:bg-blue-500 px-4 rounded-r-lg font-bold transition">+</button>
+        </div>
+
+        <ul id="players-list" class="mb-6 space-y-2"></ul>
+
+        <button id="start-game-btn" class="w-full bg-green-600 hover:bg-green-500 py-3 rounded-lg font-bold text-lg transition hidden">Iniciar Juego</button>
+    </div>
+
+    <div id="game-screen" class="hidden max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+        
+        <div class="flex-1 flex flex-col gap-4">
+            <div class="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg border border-gray-700">
+                <iframe id="youtube-player" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-blue-400">Panel Maestro</h2>
+                    <p id="video-info" class="text-sm text-gray-400">Ronda actual...</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="open-modal-btn" class="bg-yellow-600 hover:bg-yellow-500 px-4 py-2 rounded font-bold transition text-sm md:text-base">Asignar Ganadores</button>
+                    <button id="next-video-btn" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-bold transition text-sm md:text-base">Siguiente Video</button>
+                </div>
+            </div>
+            <button id="reset-game-btn" class="text-red-400 text-sm hover:underline self-start">Terminar Partida y Borrar Datos</button>
+        </div>
+
+        <div class="w-full md:w-1/3 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg h-fit">
+            <h2 class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">🏆 Ranking</h2>
+            <ul id="ranking-list" class="space-y-3"></ul>
+        </div>
+    </div>
+
+    <div id="score-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 p-6 rounded-xl max-w-lg w-full border border-gray-700">
+            <h2 class="text-2xl font-bold mb-4 text-yellow-400">Repartir Puntos</h2>
+            <p id="modal-answer-key" class="text-sm text-gray-300 mb-4 bg-gray-900 p-3 rounded border border-gray-600"></p>
+            
+            <div id="modal-players-list" class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
+                </div>
+
+            <div class="flex justify-end gap-3">
+                <button id="close-modal-btn" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancelar</button>
+                <button id="save-scores-btn" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-bold transition">Guardar Puntos</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
