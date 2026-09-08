@@ -114,7 +114,7 @@ async function joinRoomSession(nick, room, isAutoReconnect = false) {
       return;
     }
 
-    // Sincronizar ronda actual
+// Sincronizar ronda actual
     if (roomData.round) {
       const isNewRound = roomData.round !== currentRound;
       currentRound = roomData.round;
@@ -126,10 +126,28 @@ async function joinRoomSession(nick, room, isAutoReconnect = false) {
     }
 
     // Restaurar si el jugador ya había respondido antes de recargar
-    const me = roomData.players[myPlayerId];
+    const me = roomData.players && roomData.players[myPlayerId];
     if (me && me.submitted) {
       document.getElementById('form-container').style.display = 'none';
       document.getElementById('submitted-overlay').style.display = 'flex';
+    }
+
+    // Bloqueo estricto cuando el host abre la asignación de puntos
+    const editBtn = document.getElementById('edit-answer-btn');
+    const overlay = document.getElementById('submitted-overlay');
+    if (roomData.pointsAssigning) {
+      if (editBtn) editBtn.style.display = 'none';
+      if (!document.getElementById('lock-notice') && overlay) {
+        const notice = document.createElement('div');
+        notice.id = 'lock-notice';
+        notice.style.cssText = 'font-size: 12px; color: var(--gold); border: 1px dashed var(--gold); border-radius: 8px; padding: 8px 12px; margin-top: 10px; font-family: "Oswald"; text-transform: uppercase; letter-spacing: 0.5px;';
+        notice.textContent = '🔒 Respuestas cerradas: Evaluando puntos';
+        overlay.appendChild(notice);
+      }
+    } else {
+      if (editBtn) editBtn.style.display = 'inline-block';
+      const notice = document.getElementById('lock-notice');
+      if (notice) notice.remove();
     }
   });
 
@@ -172,6 +190,14 @@ function resetMobileForm() {
   document.getElementById('val-away').textContent = '0';
   document.getElementById('submitted-overlay').style.display = 'none';
   document.getElementById('form-container').style.display = 'block';
+
+  const editBtn = document.getElementById('edit-answer-btn');
+  if (editBtn) {
+    editBtn.style.display = 'inline-block';
+    editBtn.disabled = false;
+  }
+  const lockNotice = document.getElementById('lock-notice');
+  if (lockNotice) lockNotice.remove();
 }
 
 window.adjustScore = function(team, delta) {

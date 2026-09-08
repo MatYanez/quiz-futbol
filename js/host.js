@@ -124,16 +124,26 @@ function checkAllSubmitted() {
   const playerArray = Object.values(players);
   const total = playerArray.length;
   const submitted = playerArray.filter(p => p.submitted).length;
-  const btn = document.getElementById('reveal-btn');
+  const btnReveal = document.getElementById('reveal-btn');
+  const btnAssign = document.getElementById('open-assign');
+  const allReady = total > 0 && submitted === total;
   
-  if (total > 0 && submitted === total) {
-    btn.disabled = false;
-    btn.textContent = `Revelar video (${submitted}/${total} listos)`;
-    btn.classList.add('ready-pulse');
+  if (allReady) {
+    btnReveal.disabled = false;
+    btnReveal.textContent = `Revelar video (${submitted}/${total} listos)`;
+    btnReveal.classList.add('ready-pulse');
+
+    btnAssign.disabled = false;
+    btnAssign.style.opacity = '1';
+    btnAssign.style.cursor = 'pointer';
   } else {
-    btn.disabled = true;
-    btn.textContent = `Esperando respuestas (${submitted}/${total})`;
-    btn.classList.remove('ready-pulse');
+    btnReveal.disabled = true;
+    btnReveal.textContent = `Esperando respuestas (${submitted}/${total})`;
+    btnReveal.classList.remove('ready-pulse');
+
+    btnAssign.disabled = true;
+    btnAssign.style.opacity = '0.4';
+    btnAssign.style.cursor = 'not-allowed';
   }
 }
 
@@ -256,10 +266,7 @@ function renderAssignRows() {
   }).join('');
 }
 
-function openAssign() {
-  renderAssignRows();
-  document.getElementById('assign-modal').classList.add('open');
-}
+
 
 function closeAssignOnly() {
   document.getElementById('assign-modal').classList.remove('open');
@@ -298,6 +305,26 @@ function toggleReveal() {
   refreshMediaFilter();
 }
 
+function openAssign() {
+  const playerArray = Object.values(players);
+  const total = playerArray.length;
+  const submitted = playerArray.filter(p => p.submitted).length;
+
+  if (total === 0 || submitted < total) {
+    return showNotification({
+      title: 'Respuestas pendientes',
+      message: 'Aún faltan jugadores por enviar su predicción. Deben contestar todos antes de asignar puntos.',
+      icon: '⏳'
+    });
+  }
+
+  // Bloquea inmediatamente la edición en los teléfonos
+  update(ref(db, `rooms/${ROOM_ID}`), { pointsAssigning: true });
+
+  renderAssignRows();
+  document.getElementById('assign-modal').classList.add('open');
+}
+
 function nextVideo() {
   round += 1;
   document.getElementById('round-num').textContent = round;
@@ -312,6 +339,7 @@ function nextVideo() {
   const updates = {};
   updates[`rooms/${ROOM_ID}/round`] = round;
   updates[`rooms/${ROOM_ID}/revealed`] = false;
+  updates[`rooms/${ROOM_ID}/pointsAssigning`] = false; // Se levanta el bloqueo para la nueva ronda
   Object.keys(players).forEach(pid => {
     updates[`rooms/${ROOM_ID}/players/${pid}/submitted`] = false;
     updates[`rooms/${ROOM_ID}/players/${pid}/lastAnswer`] = null;
