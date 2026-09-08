@@ -67,9 +67,24 @@ document.getElementById('join-btn').addEventListener('click', () => {
     lastAnswer: null
   });
 
-  onValue(ref(db, `rooms/${currentRoom}`), (snapshot) => {
+onValue(ref(db, `rooms/${currentRoom}`), (snapshot) => {
     const roomData = snapshot.val();
-    if (!roomData) return;
+
+    // 1. Si la sala fue eliminada por el host
+    if (!roomData) {
+      alert('La sala fue cerrada por el host.');
+      window.location.reload();
+      return;
+    }
+
+    // 2. Si el host expulsó a este jugador específico (Kick)
+    if (!roomData.players || !roomData.players[myPlayerId]) {
+      alert('Has sido expulsado de la sala.');
+      window.location.reload();
+      return;
+    }
+
+    // 3. Sincronización de nueva ronda
     if (roomData.round && roomData.round !== currentRound) {
       currentRound = roomData.round;
       document.getElementById('round-badge').textContent = `Ronda ${currentRound}`;

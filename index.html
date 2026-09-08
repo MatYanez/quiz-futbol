@@ -17,23 +17,38 @@
     <p>Adivina antes de que se revele el gol</p>
   </div>
 
-  <div id="setup-view" class="card setup-card">
-<div style="text-align: center; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-      <p style="font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin: 0; font-family: 'Oswald';">Escanea para entrar</p>
-      
-      <!-- Contenedor del QR -->
-      <div style="background: #fff; padding: 10px; border-radius: 12px; display: inline-flex; border: 2px solid var(--gold); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
-        <img id="room-qr" src="" alt="QR de la sala" style="width: 140px; height: 140px; display: block;" />
-      </div>
-
-      <div style="width: 100%; max-width: 260px;">
-        <label style="margin-bottom: 4px; font-size: 11px;">O escribe el código:</label>
-        <input type="text" id="room-code-input" value="SALA-1" style="text-align: center; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;" />
-      </div>
+<!-- VISTA 1: EXPLORADOR DE SALAS -->
+  <div id="browser-view" class="card setup-card">
+    <label style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); font-family: 'Oswald';">Crear nueva sala</label>
+    <div class="row">
+      <input type="text" id="new-room-input" placeholder="Ej: CLASICO-2026" style="text-transform: uppercase;" />
+      <button class="btn-gold" id="create-room-btn">Crear</button>
     </div>
-    <label style="text-align: center; margin-bottom: 8px;">Jugadores conectados en vivo:</label>
+
+    <label style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-family: 'Oswald'; margin-top: 20px;">Salas activas disponibles</label>
+    <div class="rooms-list" id="rooms-list">
+      <p class="empty">Buscando salas en Firebase...</p>
+    </div>
+  </div>
+
+  <!-- VISTA 2: LOBBY DE LA SALA SELECCIONADA -->
+  <div id="setup-view" class="card setup-card" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <button class="btn-muted" id="back-to-browser" style="padding: 4px 8px; font-size: 11px;">← Cambiar sala</button>
+      <button class="btn-danger" id="delete-room-btn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px;">🗑️ Eliminar Sala</button>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+      <p style="font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin: 0; font-family: 'Oswald';">Código de Sala</p>
+      <span id="display-room-code" style="font-size: 26px; font-weight: bold; font-family: 'Oswald'; letter-spacing: 2px; color: var(--gold);">---</span>
+      
+      <div id="qrcode-container" style="background: #fff; padding: 10px; border-radius: 12px; margin: 4px 0; display: inline-block;"></div>
+      <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Escanea con el celular para unirte</p>
+    </div>
+
+    <label style="text-align: center; margin-bottom: 8px;">Jugadores en la sala:</label>
     <div id="setup-list"></div>
-    <button class="btn-gold btn-block" id="start-game">Comenzar juego con estos jugadores</button>
+    <button class="btn-gold btn-block" id="start-game">Entrar a la partida</button>
   </div>
 
   <div id="play-view">

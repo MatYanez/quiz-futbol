@@ -1,10 +1,12 @@
-import { db, ref, update, onValue } from "./firebase-config.js";
+import { db, ref, set, update, onValue } from "./firebase-config.js";
 
-let ROOM_ID = 'SALA-1';
+let ROOM_ID = null;
+let roomsData = {};
 let players = {};
 let round = 1;
 let revealed = false;
 let blurAmount = 10;
+let qrInstance = null;
 const ANON_COLOR = 'grayscale(1) sepia(1) hue-rotate(268deg) saturate(9) contrast(1.4) brightness(1.05)';
 const CAT_PTS = { jugador: 3, partido: 2, marcador: 1 };
 
@@ -17,33 +19,112 @@ function refreshMediaFilter() {
   if (media) media.style.filter = currentFilter();
 }
 
-function updateRoomQR(roomCode) {
-  // Construye la URL hacia play.html con el parámetro de sala
-  const currentUrl = new URL(window.location.href);
-  const playUrl = `${currentUrl.origin}${currentUrl.pathname.replace('index.html', '')}play.html?room=${roomCode}`;
-  
-  // Genera el código QR con fondo blanco y bordes limpios
-  const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(playUrl)}&margin=1`;
-  const qrImg = document.getElementById('room-qr');
-  if (qrImg) qrImg.src = qrApi;
+// --- 1. EXPLORADOR DE SALAS ---
+function listenAllRooms() {
+  onValue(ref(db, 'rooms'), (snapshot) => {
+    roomsData = snapshot.val() || {};
+    renderRoomsList();
+  });
 }
 
-function initRoomListener() {
-  ROOM_ID = document.getElementById('room-code-input').value.trim().toUpperCase() || 'SALA-1';
-  document.getElementById('room-badge').textContent = ROOM_ID;
+function renderRoomsList() {
+  const list = document.getElementById('rooms-list');
+  const roomKeys = Object.keys(roomsData);
 
-  updateRoomQR(ROOM_ID);
+  if (!roomKeys.length) {
+    list.innerHTML = '<p class="empty">No hay salas abiertas. ¡Crea una arriba!</p>';
+    return;
+  }
 
-  update(ref(db, `rooms/${ROOM_ID}`), {
-    round: round,
-    revealed: false
+  list.innerHTML = roomKeys.map(code => {
+    const r = roomsData[code];
+    const pCount = r.players ? Object.keys(r.players).length : 0;
+    return `
+      <div class="room-item-card">
+        <div>
+          <strong>${code}</strong>
+          <div class="room-meta">Ronda: ${r.round || 1} · ${pCount} jugador(es)</div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-gold" style="padding: 6px 12px; font-size: 11px;" onclick="window.enterRoom('${code}')">Entrar</button>
+          <button class="btn-danger" style="padding: 6px 8px; font-size: 11px;" onclick="window.deleteRoom('${code}')">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.createRoom = function() {
+  const input = document.getElementById('new-room-input');
+  const code = input.value.trim().toUpperCase().replace(/\s+/g, '-');
+  if (!code) return alert('Ingresa un código para la sala');
+
+  set(ref(db, `rooms/${code}`), {
+    round: 1,
+    revealed: false,
+    createdAt: Date.now()
   });
 
+  input.value = '';
+  window.enterRoom(code);
+};
+
+window.deleteRoom = function(code) {
+  if (!confirm(`¿Seguro que quieres eliminar la sala ${code}? Se desconectará a todos.`)) return;
+  set(ref(db, `rooms/${code}`), null);
+  if (ROOM_ID === code) {
+    window.backToBrowser();
+  }
+};
+
+window.enterRoom = function(code) {
+  ROOM_ID = code;
+  document.getElementById('display-room-code').textContent = ROOM_ID;
+  document.getElementById('room-badge').textContent = ROOM_ID;
+
+  document.getElementById('browser-view').style.display = 'none';
+  document.getElementById('setup-view').style.display = 'block';
+
+  generateQR();
+
+  // Escuchar a los jugadores de esta sala específica
   onValue(ref(db, `rooms/${ROOM_ID}/players`), (snapshot) => {
     players = snapshot.val() || {};
     renderSetup();
     renderSidebar();
     checkAllSubmitted();
+  });
+};
+
+window.backToBrowser = function() {
+  ROOM_ID = null;
+  document.getElementById('setup-view').style.display = 'none';
+  document.getElementById('play-view').style.display = 'none';
+  document.getElementById('browser-view').style.display = 'block';
+};
+
+window.kickPlayer = function(pid) {
+  if (!confirm('¿Seguro que quieres expulsar a este jugador?')) return;
+  set(ref(db, `rooms/${ROOM_ID}/players/${pid}`), null);
+};
+
+// --- 2. QR CODE ---
+function generateQR() {
+  const qrBox = document.getElementById('qrcode-container');
+  if (!qrBox || typeof QRCode === 'undefined') return;
+
+  qrBox.innerHTML = '';
+  const currentOrigin = window.location.origin;
+  const currentPath = window.location.pathname.replace('index.html', '');
+  const joinUrl = `${currentOrigin}${currentPath}play.html?room=${ROOM_ID}`;
+
+  qrInstance = new QRCode(qrBox, {
+    text: joinUrl,
+    width: 130,
+    height: 130,
+    colorDark: "#0B2A1F",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
   });
 }
 
@@ -68,7 +149,13 @@ function renderSetup() {
   const list = document.getElementById('setup-list');
   const playerArray = Object.values(players);
   list.innerHTML = playerArray.length ? playerArray.map(p => `
-    <div class="setup-item"><span>${p.avatar || '⚽'} ${p.name}</span> <span style="font-size: 11px; color: var(--gold);">Conectado</span></div>
+    <div class="setup-item">
+      <span>${p.avatar || '⚽'} ${p.name}</span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size: 11px; color: var(--gold);">Conectado</span>
+        <button class="kick-btn" onclick="window.kickPlayer('${p.id}')">Kick</button>
+      </div>
+    </div>
   `).join('') : '<p class="empty">Esperando que se conecten desde el celular...</p>';
 }
 
@@ -90,6 +177,7 @@ function itemHtml(p, i) {
       <span class="rank-status">${statusLabel}</span>
     </div>
     <span class="rank-score">${p.score || 0}</span>
+    <button class="kick-btn" style="margin-left:4px;" onclick="window.kickPlayer('${p.id}')">✕</button>
   </div>`;
 }
 
@@ -251,6 +339,9 @@ function setupBlurSlider() {
 }
 
 // Event Listeners
+document.getElementById('create-room-btn').addEventListener('click', window.createRoom);
+document.getElementById('delete-room-btn').addEventListener('click', () => window.deleteRoom(ROOM_ID));
+document.getElementById('back-to-browser').addEventListener('click', window.backToBrowser);
 document.getElementById('start-game').addEventListener('click', startGame);
 document.getElementById('open-assign').addEventListener('click', openAssign);
 document.getElementById('close-assign').addEventListener('click', closeAssignOnly);
@@ -260,8 +351,7 @@ document.getElementById('load-yt').addEventListener('click', loadYouTube);
 document.getElementById('yt-url').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadYouTube(); });
 document.getElementById('reveal-btn').addEventListener('click', toggleReveal);
 document.getElementById('next-video-btn').addEventListener('click', nextVideo);
-document.getElementById('room-code-input').addEventListener('change', initRoomListener);
 
-initRoomListener();
+listenAllRooms();
 setupVideoFrame();
 setupBlurSlider();
