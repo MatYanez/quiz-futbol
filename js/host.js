@@ -338,7 +338,6 @@ function setupBlurSlider() {
   });
 }
 
-// Event Listeners
 document.getElementById('create-room-btn').addEventListener('click', window.createRoom);
 document.getElementById('delete-room-btn').addEventListener('click', () => window.deleteRoom(ROOM_ID));
 document.getElementById('back-to-browser').addEventListener('click', window.backToBrowser);
