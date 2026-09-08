@@ -67,7 +67,22 @@ window.enterRoom = function(code) {
 
   generateQR();
 
-  // Escuchar a los jugadores de esta sala específica
+  // 1. Escuchar la información general de la sala (ronda y estado de revelado)
+  onValue(ref(db, `rooms/${ROOM_ID}`), (snapshot) => {
+    const roomData = snapshot.val();
+    if (!roomData) return;
+    
+    if (roomData.round) {
+      round = roomData.round;
+      document.getElementById('round-num').textContent = round;
+    }
+    revealed = !!roomData.revealed;
+    document.getElementById('video-data-card').classList.toggle('is-revealed', revealed);
+    document.getElementById('reveal-btn').textContent = revealed ? 'Ocultar video' : 'Revelar video';
+    refreshMediaFilter();
+  });
+
+  // 2. Escuchar a los jugadores de esta sala específica
   onValue(ref(db, `rooms/${ROOM_ID}/players`), (snapshot) => {
     players = snapshot.val() || {};
     renderSetup();

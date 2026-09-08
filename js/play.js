@@ -2,20 +2,32 @@ import { db, ref, set, update, onValue } from "./firebase-config.js";
 import { showNotification } from "./modal.js";
 
 const ICONS = ['⚽', '🧤', '🏆', '🔥', '👑', '⚡'];
-let chosenAvatar = ICONS[0];
+let chosenAvatar = sessionStorage.getItem('ga_avatar') || ICONS[0];
 let homeScore = 0;
 let awayScore = 0;
-let myPlayerId = 'p_' + Date.now() + Math.random().toString(36).substring(2, 6);
 let currentRound = 1;
+
+// Recuperar ID persistente de sesión o generar uno nuevo
+let myPlayerId = sessionStorage.getItem('ga_pid');
+if (!myPlayerId) {
+  myPlayerId = 'p_' + Date.now() + Math.random().toString(36).substring(2, 6);
+  sessionStorage.setItem('ga_pid', myPlayerId);
+}
 
 // Lee el parámetro de la URL si entra por QR (?room=CODIGO)
 const urlParams = new URLSearchParams(window.location.search);
-let currentRoom = (urlParams.get('room') || 'SALA-1').toUpperCase();
+let currentRoom = (urlParams.get('room') || sessionStorage.getItem('ga_room') || 'SALA-1').toUpperCase();
 
 // Asigna el valor al input visual del lobby
 const roomInput = document.getElementById('player-room');
 if (roomInput) {
   roomInput.value = currentRoom;
+}
+
+const savedNick = sessionStorage.getItem('ga_nick');
+if (savedNick) {
+  const nickInput = document.getElementById('player-nickname');
+  if (nickInput) nickInput.value = savedNick;
 }
 
 const DB_PLAYERS = [
@@ -64,6 +76,10 @@ document.getElementById('join-btn').addEventListener('click', async () => {
   
   document.getElementById('current-avatar').textContent = chosenAvatar;
   document.getElementById('current-name').textContent = nick;
+  // Guardar datos en sessionStorage para reconexión
+  sessionStorage.setItem('ga_nick', nick);
+  sessionStorage.setItem('ga_room', currentRoom);
+  sessionStorage.setItem('ga_avatar', chosenAvatar);
 
   set(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {
     id: myPlayerId,
@@ -99,10 +115,14 @@ document.getElementById('join-btn').addEventListener('click', async () => {
       return;
     }
 
-    if (roomData.round && roomData.round !== currentRound) {
+    if (roomData.round) {
+      const isNewRound = roomData.round !== currentRound;
       currentRound = roomData.round;
       document.getElementById('round-badge').textContent = `Ronda ${currentRound}`;
-      resetMobileForm();
+      
+      if (isNewRound) {
+        resetMobileForm();
+      }
     }
   });
 
