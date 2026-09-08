@@ -229,7 +229,6 @@ function itemHtml(p, i) {
       <span class="rank-status">${statusLabel}</span>
     </div>
     <span class="rank-score">${p.score || 0}</span>
-    <button class="kick-btn" style="margin-left:4px;" onclick="window.kickPlayer('${p.id}')">✕</button>
   </div>`;
 }
 
