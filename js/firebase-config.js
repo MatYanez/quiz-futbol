@@ -1,15 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// REEMPLAZA CON TUS CREDENCIALES
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.firebasestorage.app",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyCHWIFEtyCPsabSxmeOirno6xaAf7XQ8YA",
+  authDomain: "soccer-8acce.firebaseapp.com",
+  databaseURL: "https://soccer-8acce-default-rtdb.firebaseio.com",
+  projectId: "soccer-8acce",
+  storageBucket: "soccer-8acce.firebasestorage.app",
+  messagingSenderId: "417657504224",
+  appId: "1:417657504224:web:728014d45f44c57f71eb85"
 };
 
 const app = initializeApp(firebaseConfig);
