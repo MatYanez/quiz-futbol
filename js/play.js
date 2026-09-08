@@ -1,4 +1,5 @@
 import { db, ref, set, update, onValue } from "./firebase-config.js";
+import { showNotification } from "./modal.js";
 
 const ICONS = ['⚽', '🧤', '🏆', '🔥', '👑', '⚡'];
 let chosenAvatar = ICONS[0];
@@ -50,10 +51,16 @@ avatarGrid.querySelectorAll('.avatar-card').forEach(card => {
 });
 
 // Entrar a sala
-document.getElementById('join-btn').addEventListener('click', () => {
+document.getElementById('join-btn').addEventListener('click', async () => {
   const nick = document.getElementById('player-nickname').value.trim();
   currentRoom = document.getElementById('player-room').value.trim().toUpperCase() || 'SALA-1';
-  if (!nick) return alert('Por favor escribe un apodo');
+  if (!nick) {
+    return showNotification({
+      title: 'Falta tu apodo',
+      message: 'Por favor escribe un nombre o apodo para entrar a la cancha.',
+      icon: '✍️'
+    });
+  }
   
   document.getElementById('current-avatar').textContent = chosenAvatar;
   document.getElementById('current-name').textContent = nick;
@@ -67,24 +74,31 @@ document.getElementById('join-btn').addEventListener('click', () => {
     lastAnswer: null
   });
 
-onValue(ref(db, `rooms/${currentRoom}`), (snapshot) => {
+  onValue(ref(db, `rooms/${currentRoom}`), async (snapshot) => {
     const roomData = snapshot.val();
 
-    // 1. Si la sala fue eliminada por el host
+    // Si el host eliminó la sala
     if (!roomData) {
-      alert('La sala fue cerrada por el host.');
+      await showNotification({
+        title: 'Sala cerrada',
+        message: 'La sala de juego fue cerrada por el host.',
+        icon: '🔒'
+      });
       window.location.reload();
       return;
     }
 
-    // 2. Si el host expulsó a este jugador específico (Kick)
+    // Si fue kickeado
     if (!roomData.players || !roomData.players[myPlayerId]) {
-      alert('Has sido expulsado de la sala.');
+      await showNotification({
+        title: 'Expulsado',
+        message: 'Has sido expulsado de la partida.',
+        icon: '🚪'
+      });
       window.location.reload();
       return;
     }
 
-    // 3. Sincronización de nueva ronda
     if (roomData.round && roomData.round !== currentRound) {
       currentRound = roomData.round;
       document.getElementById('round-badge').textContent = `Ronda ${currentRound}`;
@@ -116,9 +130,15 @@ window.adjustScore = function(team, delta) {
   }
 };
 
-window.sendAnswer = function() {
+window.sendAnswer = async function() {
   const scorer = document.getElementById('answer-scorer').value.trim();
-  if (!scorer) return alert('Debes ingresar al menos el nombre del jugador');
+  if (!scorer) {
+    return showNotification({
+      title: 'Respuesta vacía',
+      message: 'Debes indicar quién fue el jugador que anotó el gol.',
+      icon: '⚽'
+    });
+  }
 
   update(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {
     submitted: true,

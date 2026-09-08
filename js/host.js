@@ -1,4 +1,5 @@
 import { db, ref, set, update, onValue } from "./firebase-config.js";
+import { showNotification, showConfirm } from "./modal.js";
 
 let ROOM_ID = null;
 let roomsData = {};
@@ -54,28 +55,7 @@ function renderRoomsList() {
   }).join('');
 }
 
-window.createRoom = function() {
-  const input = document.getElementById('new-room-input');
-  const code = input.value.trim().toUpperCase().replace(/\s+/g, '-');
-  if (!code) return alert('Ingresa un código para la sala');
 
-  set(ref(db, `rooms/${code}`), {
-    round: 1,
-    revealed: false,
-    createdAt: Date.now()
-  });
-
-  input.value = '';
-  window.enterRoom(code);
-};
-
-window.deleteRoom = function(code) {
-  if (!confirm(`¿Seguro que quieres eliminar la sala ${code}? Se desconectará a todos.`)) return;
-  set(ref(db, `rooms/${code}`), null);
-  if (ROOM_ID === code) {
-    window.backToBrowser();
-  }
-};
 
 window.enterRoom = function(code) {
   ROOM_ID = code;
@@ -103,10 +83,7 @@ window.backToBrowser = function() {
   document.getElementById('browser-view').style.display = 'block';
 };
 
-window.kickPlayer = function(pid) {
-  if (!confirm('¿Seguro que quieres expulsar a este jugador?')) return;
-  set(ref(db, `rooms/${ROOM_ID}/players/${pid}`), null);
-};
+
 
 // --- 2. QR CODE ---
 function generateQR() {
@@ -159,8 +136,68 @@ function renderSetup() {
   `).join('') : '<p class="empty">Esperando que se conecten desde el celular...</p>';
 }
 
+window.createRoom = async function() {
+  const input = document.getElementById('new-room-input');
+  const code = input.value.trim().toUpperCase().replace(/\s+/g, '-');
+  if (!code) {
+    return showNotification({
+      title: 'Campo vacío',
+      message: 'Ingresa un código para crear la nueva sala.',
+      icon: '⚠️'
+    });
+  }
+
+  set(ref(db, `rooms/${code}`), {
+    round: 1,
+    revealed: false,
+    createdAt: Date.now()
+  });
+
+  input.value = '';
+  window.enterRoom(code);
+};
+
+window.deleteRoom = async function(code) {
+  const confirmed = await showConfirm({
+    title: 'Eliminar Sala',
+    message: `¿Seguro que deseas destruir la sala ${code}? Se desconectará a todos los participantes.`,
+    icon: '🗑️',
+    confirmText: 'Sí, eliminar',
+    cancelText: 'Volver'
+  });
+
+  if (!confirmed) return;
+
+  set(ref(db, `rooms/${code}`), null);
+  if (ROOM_ID === code) {
+    window.backToBrowser();
+  }
+};
+
+window.kickPlayer = async function(pid) {
+  const player = players[pid];
+  const name = player ? player.name : 'este jugador';
+  
+  const confirmed = await showConfirm({
+    title: 'Expulsar Jugador',
+    message: `¿Estás seguro de que quieres expulsar a ${name} de la partida?`,
+    icon: '🚷',
+    confirmText: 'Expulsar',
+    cancelText: 'Cancelar'
+  });
+
+  if (!confirmed) return;
+  set(ref(db, `rooms/${ROOM_ID}/players/${pid}`), null);
+};
+
 function startGame() {
-  if (Object.keys(players).length < 1) return alert('Debes esperar al menos a 1 jugador conectado');
+  if (Object.keys(players).length < 1) {
+    return showNotification({
+      title: 'Faltan Jugadores',
+      message: 'Debes esperar a que al menos un participante se conecte desde su celular para iniciar.',
+      icon: '👥'
+    });
+  }
   document.getElementById('setup-view').style.display = 'none';
   document.getElementById('play-view').style.display = 'flex';
   checkAllSubmitted();
