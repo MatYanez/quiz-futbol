@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gol Anónimo — HUD del juego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/host.css" />
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <h1>Gol <span>Anónimo</span></h1>
+    <p>Adivina antes de que se revele el gol</p>
+  </div>
+
+  <div id="setup-view" class="card setup-card">
+    <div style="text-align: center; margin-bottom: 16px;">
+      <p style="font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px; font-family: 'Oswald';">Código de Sala</p>
+      <input type="text" id="room-code-input" value="SALA-1" style="text-align: center; font-size: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;" />
+      <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0;">Los jugadores deben ingresar este código desde su celular en <b>play.html</b></p>
+    </div>
+    <label style="text-align: center; margin-bottom: 8px;">Jugadores conectados en vivo:</label>
+    <div id="setup-list"></div>
+    <button class="btn-gold btn-block" id="start-game">Comenzar juego con estos jugadores</button>
+  </div>
+
+  <div id="play-view">
+    <div class="video-col">
+      <div class="row">
+        <input type="text" id="yt-url" placeholder="O pega un link de YouTube (no listado) o Google Drive" />
+        <button class="btn-gold" id="load-yt">Cargar</button>
+      </div>
+      <div class="video-frame" id="video-frame">
+        <div class="play-dot">▶</div>
+        <p>Haz clic para cargar un video y probar cómo se ve</p>
+        <input type="file" id="video-file" accept="video/*" style="display:none" />
+      </div>
+
+      <div class="blur-row">
+        <label>Difuminado</label>
+        <input type="range" id="blur-slider" min="0" max="24" value="10" />
+        <span id="blur-value">10px</span>
+      </div>
+
+      <div class="card video-data" id="video-data-card">
+        <p class="section-label">Datos del video</p>
+        <div class="field-grid">
+          <div><label>Equipo local</label><input type="text" id="v-local" placeholder="Ej: Colo-Colo" /></div>
+          <div><label>Equipo visitante</label><input type="text" id="v-visita" placeholder="Ej: U. de Chile" /></div>
+          <div><label>Jugador que anotó</label><input type="text" id="v-jugador" placeholder="Nombre del jugador" /></div>
+          <div><label>Marcador final</label><input type="text" id="v-marcador" placeholder="Ej: 2-1" /></div>
+        </div>
+        <div class="reveal-overlay">
+          <span>🔒</span>
+          <span>Presiona "Revelar video"</span>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn-gold btn-block" id="reveal-btn">Esperando respuestas</button>
+        <button class="btn-block btn-muted" id="next-video-btn">Siguiente video</button>
+      </div>
+    </div>
+
+    <div class="sidebar-col">
+      <div class="card">
+        <div class="round-tag">Ronda <b id="round-num">1</b> · <span id="room-badge" style="color: var(--text-muted); font-size: 12px;">SALA-1</span></div>
+        <p class="sidebar-label">Marcador y Estado</p>
+        <div id="sidebar-list"></div>
+        <button class="btn-gold btn-block" id="open-assign">Asignar puntos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="assign-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Asignar puntos</h3>
+      <button class="modal-close" id="close-assign">✕</button>
+    </div>
+    <div class="assign-headers">
+      <span></span><span>Jug. +3</span><span>Part. +2</span><span>Marc. +1</span>
+    </div>
+    <div id="assign-rows"></div>
+    <button class="btn-gold btn-block" id="save-assign">Guardar puntos</button>
+  </div>
+</div>
+
+<script type="module" src="js/host.js"></script>
+</body>
+</html>

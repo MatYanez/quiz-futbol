@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Gol Anónimo — Jugador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/play.css" />
+</head>
+<body>
+
+  <!-- LOBBY -->
+  <div id="lobby-view">
+    <div style="text-align: center;">
+      <h1 style="font-family: 'Oswald'; text-transform: uppercase; margin: 0; font-size: 28px;">Gol <span style="color: var(--gold);">Anónimo</span></h1>
+      <p style="color: var(--text-muted); font-size: 13px;">Elige tu avatar y apodo para entrar a jugar</p>
+    </div>
+
+    <div class="card">
+      <label>1. Código de Sala</label>
+      <input type="text" id="player-room" placeholder="Ej: SALA-1" value="SALA-1" style="text-transform: uppercase; font-weight: bold; letter-spacing: 1px;" />
+
+      <label style="margin-top: 14px;">2. Selecciona tu personaje</label>
+      <div class="avatar-grid" id="mobile-avatars"></div>
+
+      <label style="margin-top: 14px;">3. Tu Apodo</label>
+      <input type="text" id="player-nickname" placeholder="Ej: Matias" maxlength="12" />
+    </div>
+
+    <button class="btn-submit" id="join-btn">Entrar a la sala</button>
+  </div>
+
+  <!-- JUEGO -->
+  <div id="game-view" style="display: none; flex-direction: column; flex: 1;">
+    <div class="header">
+      <div class="player-tag">
+        <div class="player-avatar" id="current-avatar">⚽</div>
+        <span id="current-name">Jugador</span>
+      </div>
+      <div class="round-pill" id="round-badge">Ronda 1</div>
+    </div>
+
+    <div id="form-container">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="margin-bottom: 0;">¿Quién hizo el gol?</label>
+          <button type="button" class="chip-search" onclick="openSearchModal()">🔍 Buscar...</button>
+        </div>
+        <div class="input-wrap">
+          <input type="text" id="answer-scorer" placeholder="Escribe el nombre del goleador..." autocomplete="off" oninput="handleTypingScorer(this.value)" />
+          <div class="suggestions-box" id="suggestions-box"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label style="text-align: center;">Marcador Final</label>
+        <div class="score-board">
+          <div class="team-counter">
+            <span class="team-label">Local</span>
+            <div class="stepper">
+              <div class="step-btn" onclick="adjustScore('home', -1)">-</div>
+              <div class="step-val" id="val-home">0</div>
+              <div class="step-btn" onclick="adjustScore('home', 1)">+</div>
+            </div>
+          </div>
+
+          <span class="vs-badge">VS</span>
+
+          <div class="team-counter">
+            <span class="team-label">Visita</span>
+            <div class="stepper">
+              <div class="step-btn" onclick="adjustScore('away', -1)">-</div>
+              <div class="step-val" id="val-away">0</div>
+              <div class="step-btn" onclick="adjustScore('away', 1)">+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="submit-btn" onclick="sendAnswer()">Enviar predicción</button>
+    </div>
+
+    <div id="submitted-overlay">
+      <div class="check-icon">✅</div>
+      <h2 style="font-family: 'Oswald'; margin: 0;">¡PREDICCIÓN ENVIADA!</h2>
+      <p style="color: var(--text-muted); font-size: 14px; max-width: 260px;">Mira la pantalla principal. Esperando que el resto termine para revelar el gol...</p>
+      <button class="btn-submit" id="edit-answer-btn" onclick="editAnswer()" style="background: transparent; border: 1px solid var(--border-strong); color: var(--gold); margin-top: 10px;">✏️ Editar mi respuesta</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE BÚSQUEDA -->
+  <div class="modal-overlay" id="search-modal">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <h3>Explorar Jugadores</h3>
+        <button class="modal-close" onclick="closeSearchModal()">✕</button>
+      </div>
+
+      <div class="select-row">
+        <div>
+          <label>País</label>
+          <div class="combo-wrap">
+            <input type="text" id="modal-filter-country" placeholder="Todos los países" autocomplete="off" onclick="toggleDropdown('dropdown-countries')" oninput="onTypeDropdown('modal-filter-country', 'dropdown-countries')" />
+            <span class="combo-arrow">▼</span>
+            <div class="combo-dropdown" id="dropdown-countries"></div>
+          </div>
+        </div>
+        <div>
+          <label>Equipo</label>
+          <div class="combo-wrap">
+            <input type="text" id="modal-filter-team" placeholder="Todos los equipos" autocomplete="off" onclick="toggleDropdown('dropdown-teams')" oninput="onTypeDropdown('modal-filter-team', 'dropdown-teams')" />
+            <span class="combo-arrow">▼</span>
+            <div class="combo-dropdown" id="dropdown-teams"></div>
+          </div>
+        </div>
+      </div>
+
+      <input type="text" id="modal-search-text" placeholder="Nombre del jugador..." oninput="filterModalPlayers()" autocomplete="off" />
+
+      <label>Resultados (<span id="results-count">0</span>)</label>
+      <div class="results-list" id="modal-results-list"></div>
+    </div>
+  </div>
+
+<script type="module" src="js/play.js"></script>
+</body>
+</html>
