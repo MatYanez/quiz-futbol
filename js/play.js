@@ -2,21 +2,21 @@ import { db, ref, set, update, onValue } from "./firebase-config.js";
 import { showNotification } from "./modal.js";
 
 const ICONS = ['⚽', '🧤', '🏆', '🔥', '👑', '⚡'];
-let chosenAvatar = sessionStorage.getItem('ga_avatar') || ICONS[0];
+let chosenAvatar = localStorage.getItem('ga_avatar') || ICONS[0];
 let homeScore = 0;
 let awayScore = 0;
 let currentRound = 1;
 
-// Recuperar ID persistente de sesión o generar uno nuevo
-let myPlayerId = sessionStorage.getItem('ga_pid');
+// Recuperar ID persistente en localStorage para que sobreviva cierres de pestaña
+let myPlayerId = localStorage.getItem('ga_pid');
 if (!myPlayerId) {
   myPlayerId = 'p_' + Date.now() + Math.random().toString(36).substring(2, 6);
-  sessionStorage.setItem('ga_pid', myPlayerId);
+  localStorage.setItem('ga_pid', myPlayerId);
 }
 
 // Lee el parámetro de la URL si entra por QR (?room=CODIGO)
 const urlParams = new URLSearchParams(window.location.search);
-let currentRoom = (urlParams.get('room') || sessionStorage.getItem('ga_room') || 'SALA-1').toUpperCase();
+let currentRoom = (urlParams.get('room') || localStorage.getItem('ga_room') || 'SALA-1').toUpperCase();
 
 // Asigna el valor al input visual del lobby
 const roomInput = document.getElementById('player-room');
@@ -24,7 +24,7 @@ if (roomInput) {
   roomInput.value = currentRoom;
 }
 
-const savedNick = sessionStorage.getItem('ga_nick');
+const savedNick = localStorage.getItem('ga_nick');
 if (savedNick) {
   const nickInput = document.getElementById('player-nickname');
   if (nickInput) nickInput.value = savedNick;
@@ -63,6 +63,81 @@ avatarGrid.querySelectorAll('.avatar-card').forEach(card => {
 });
 
 // Entrar a sala
+// Entrar a sala y sincronizar
+async function joinRoomSession(nick, room, isAutoReconnect = false) {
+  document.getElementById('current-avatar').textContent = chosenAvatar;
+  document.getElementById('current-name').textContent = nick;
+
+  // Si no es reconexión automática, registramos al jugador en Firebase
+  if (!isAutoReconnect) {
+    set(ref(db, `rooms/${room}/players/${myPlayerId}`), {
+      id: myPlayerId,
+      name: nick,
+      avatar: chosenAvatar,
+      score: 0,
+      submitted: false,
+      lastAnswer: null
+    });
+  }
+
+  // Guardar datos en localStorage para auto-reconectar si actualiza
+  localStorage.setItem('ga_joined', 'true');
+  localStorage.setItem('ga_nick', nick);
+  localStorage.setItem('ga_room', room);
+  localStorage.setItem('ga_avatar', chosenAvatar);
+
+  // Escuchar estado de la sala
+  onValue(ref(db, `rooms/${room}`), async (snapshot) => {
+    const roomData = snapshot.val();
+
+    // Si la sala fue eliminada por el host
+    if (!roomData) {
+      localStorage.removeItem('ga_joined');
+      await showNotification({
+        title: 'Sala cerrada',
+        message: 'La sala de juego fue cerrada por el host.',
+        icon: '🔒'
+      });
+      window.location.reload();
+      return;
+    }
+
+    // Si fue expulsado por el host
+    if (!roomData.players || !roomData.players[myPlayerId]) {
+      localStorage.removeItem('ga_joined');
+      await showNotification({
+        title: 'Expulsado',
+        message: 'Has sido expulsado de la partida.',
+        icon: '🚪'
+      });
+      window.location.reload();
+      return;
+    }
+
+    // Sincronizar ronda actual
+    if (roomData.round) {
+      const isNewRound = roomData.round !== currentRound;
+      currentRound = roomData.round;
+      document.getElementById('round-badge').textContent = `Ronda ${currentRound}`;
+      
+      if (isNewRound) {
+        resetMobileForm();
+      }
+    }
+
+    // Restaurar si el jugador ya había respondido antes de recargar
+    const me = roomData.players[myPlayerId];
+    if (me && me.submitted) {
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('submitted-overlay').style.display = 'flex';
+    }
+  });
+
+  document.getElementById('lobby-view').style.display = 'none';
+  document.getElementById('game-view').style.display = 'flex';
+}
+
+// Botón "Entrar a la sala"
 document.getElementById('join-btn').addEventListener('click', async () => {
   const nick = document.getElementById('player-nickname').value.trim();
   currentRoom = document.getElementById('player-room').value.trim().toUpperCase() || 'SALA-1';
@@ -73,61 +148,20 @@ document.getElementById('join-btn').addEventListener('click', async () => {
       icon: '✍️'
     });
   }
-  
-  document.getElementById('current-avatar').textContent = chosenAvatar;
-  document.getElementById('current-name').textContent = nick;
-  // Guardar datos en sessionStorage para reconexión
-  sessionStorage.setItem('ga_nick', nick);
-  sessionStorage.setItem('ga_room', currentRoom);
-  sessionStorage.setItem('ga_avatar', chosenAvatar);
+  joinRoomSession(nick, currentRoom, false);
+});
 
-  set(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {
-    id: myPlayerId,
-    name: nick,
-    avatar: chosenAvatar,
-    score: 0,
-    submitted: false,
-    lastAnswer: null
-  });
+// Auto-reconexión si el usuario recarga la página
+window.addEventListener('DOMContentLoaded', () => {
+  const alreadyJoined = localStorage.getItem('ga_joined') === 'true';
+  const savedNick = localStorage.getItem('ga_nick');
+  const savedRoom = localStorage.getItem('ga_room');
 
-  onValue(ref(db, `rooms/${currentRoom}`), async (snapshot) => {
-    const roomData = snapshot.val();
-
-    // Si el host eliminó la sala
-    if (!roomData) {
-      await showNotification({
-        title: 'Sala cerrada',
-        message: 'La sala de juego fue cerrada por el host.',
-        icon: '🔒'
-      });
-      window.location.reload();
-      return;
-    }
-
-    // Si fue kickeado
-    if (!roomData.players || !roomData.players[myPlayerId]) {
-      await showNotification({
-        title: 'Expulsado',
-        message: 'Has sido expulsado de la partida.',
-        icon: '🚪'
-      });
-      window.location.reload();
-      return;
-    }
-
-    if (roomData.round) {
-      const isNewRound = roomData.round !== currentRound;
-      currentRound = roomData.round;
-      document.getElementById('round-badge').textContent = `Ronda ${currentRound}`;
-      
-      if (isNewRound) {
-        resetMobileForm();
-      }
-    }
-  });
-
-  document.getElementById('lobby-view').style.display = 'none';
-  document.getElementById('game-view').style.display = 'flex';
+  if (alreadyJoined && savedNick && savedRoom) {
+    currentRoom = savedRoom;
+    chosenAvatar = localStorage.getItem('ga_avatar') || chosenAvatar;
+    joinRoomSession(savedNick, savedRoom, true);
+  }
 });
 
 function resetMobileForm() {
