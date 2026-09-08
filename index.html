@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/host.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -17,10 +18,18 @@
   </div>
 
   <div id="setup-view" class="card setup-card">
-    <div style="text-align: center; margin-bottom: 16px;">
-      <p style="font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px; font-family: 'Oswald';">Código de Sala</p>
-      <input type="text" id="room-code-input" value="SALA-1" style="text-align: center; font-size: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;" />
-      <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0;">Los jugadores deben ingresar este código desde su celular en <b>play.html</b></p>
+<div style="text-align: center; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+      <p style="font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin: 0; font-family: 'Oswald';">Escanea para entrar</p>
+      
+      <!-- Contenedor del QR -->
+      <div style="background: #fff; padding: 10px; border-radius: 12px; display: inline-flex; border: 2px solid var(--gold); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+        <img id="room-qr" src="" alt="QR de la sala" style="width: 140px; height: 140px; display: block;" />
+      </div>
+
+      <div style="width: 100%; max-width: 260px;">
+        <label style="margin-bottom: 4px; font-size: 11px;">O escribe el código:</label>
+        <input type="text" id="room-code-input" value="SALA-1" style="text-align: center; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;" />
+      </div>
     </div>
     <label style="text-align: center; margin-bottom: 8px;">Jugadores conectados en vivo:</label>
     <div id="setup-list"></div>

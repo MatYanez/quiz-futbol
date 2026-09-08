@@ -5,8 +5,17 @@ let chosenAvatar = ICONS[0];
 let homeScore = 0;
 let awayScore = 0;
 let myPlayerId = 'p_' + Date.now() + Math.random().toString(36).substring(2, 6);
-let currentRoom = 'SALA-1';
 let currentRound = 1;
+
+// Lee el parámetro de la URL si entra por QR (?room=CODIGO)
+const urlParams = new URLSearchParams(window.location.search);
+let currentRoom = (urlParams.get('room') || 'SALA-1').toUpperCase();
+
+// Asigna el valor al input visual del lobby
+const roomInput = document.getElementById('player-room');
+if (roomInput) {
+  roomInput.value = currentRoom;
+}
 
 const DB_PLAYERS = [
   { name: 'Esteban Paredes', country: 'Chile', team: 'Colo-Colo' },

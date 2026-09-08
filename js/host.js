@@ -17,9 +17,22 @@ function refreshMediaFilter() {
   if (media) media.style.filter = currentFilter();
 }
 
+function updateRoomQR(roomCode) {
+  // Construye la URL hacia play.html con el parámetro de sala
+  const currentUrl = new URL(window.location.href);
+  const playUrl = `${currentUrl.origin}${currentUrl.pathname.replace('index.html', '')}play.html?room=${roomCode}`;
+  
+  // Genera el código QR con fondo blanco y bordes limpios
+  const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(playUrl)}&margin=1`;
+  const qrImg = document.getElementById('room-qr');
+  if (qrImg) qrImg.src = qrApi;
+}
+
 function initRoomListener() {
   ROOM_ID = document.getElementById('room-code-input').value.trim().toUpperCase() || 'SALA-1';
   document.getElementById('room-badge').textContent = ROOM_ID;
+
+  updateRoomQR(ROOM_ID);
 
   update(ref(db, `rooms/${ROOM_ID}`), {
     round: round,
