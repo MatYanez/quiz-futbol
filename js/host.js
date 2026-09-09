@@ -358,26 +358,6 @@ function openAssign() {
   document.getElementById('assign-modal').classList.add('open');
 }
 
-function openAssign() {
-  const playerArray = Object.values(players);
-  const total = playerArray.length;
-  const submitted = playerArray.filter(p => p.submitted).length;
-
-  if (total === 0 || submitted < total) {
-    return showNotification({
-      title: 'Respuestas pendientes',
-      message: 'Aún faltan jugadores por enviar su predicción. Deben contestar todos antes de evaluar.',
-      icon: '⏳'
-    });
-  }
-
-  update(ref(db, `rooms/${ROOM_ID}`), { pointsAssigning: true });
-
-  syncReviewVideo();
-  renderAssignRows();
-  document.getElementById('assign-modal').classList.add('open');
-}
-
 function closeAssignOnly() {
   document.getElementById('assign-modal').classList.remove('open');
 }
