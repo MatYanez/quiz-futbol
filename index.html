@@ -100,17 +100,38 @@
   </div>
 </div>
 
+<!-- MODAL ESTILO SALA DE EVALUACIÓN CON VIDEO -->
 <div class="modal-overlay" id="assign-modal">
-  <div class="modal">
+  <div class="modal-review-wide">
     <div class="modal-head">
-      <h3>Asignar puntos</h3>
+      <h3>🎬 Evaluar Respuestas & Asignar Puntos</h3>
       <button class="modal-close" id="close-assign">✕</button>
     </div>
-    <div class="assign-headers">
-      <span></span><span>Jug. +3</span><span>Part. +2</span><span>Marc. +1</span>
+
+    <div class="review-grid">
+      <!-- Columna Izquierda: Video grande y datos de referencia -->
+      <div class="review-video-preview">
+        <label>Video de la jugada</label>
+        <div class="review-video-container" id="review-video-box">
+          <p class="empty" style="padding-top: 50px;">No hay video cargado</p>
+        </div>
+        <div class="correct-data-badge">
+          <div>⚽ <b>Goleador:</b> <span id="ref-jugador">---</span></div>
+          <div>⚔️ <b>Partido:</b> <span id="ref-partido">---</span></div>
+          <div>🔢 <b>Marcador:</b> <span id="ref-marcador">---</span></div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Tarjetas de jugadores y sus predicciones -->
+      <div style="display: flex; flex-direction: column; min-height: 0;">
+        <label>Predicciones de los jugadores</label>
+        <div class="review-players-scroll" id="assign-rows"></div>
+      </div>
     </div>
-    <div id="assign-rows"></div>
-    <button class="btn-gold btn-block" id="save-assign">Guardar puntos</button>
+
+    <button class="btn-gold btn-block" id="save-assign" style="font-size: 15px; letter-spacing: 1px;">
+      🏁 Calcular y ver Posiciones (Mario Kart)
+    </button>
   </div>
 </div>
 

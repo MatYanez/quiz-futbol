@@ -229,16 +229,20 @@ function startGame() {
   renderSidebar();
 }
 
-function itemHtml(p, i) {
+function itemHtml(p, i, deltaHtml = '', floaterHtml = '') {
   const statusLabel = p.submitted ? '<span class="status-dot done"></span> Listo' : '<span class="status-dot wait"></span> Pensando...';
-  return `<div class="rank-row ${i === 0 && (p.score || 0) > 0 ? 'leader' : ''}">
+  return `<div class="rank-row ${i === 0 && (p.score || 0) > 0 ? 'leader' : ''}" data-pid="${p.id}" style="position: relative;">
     <span class="rank-num">${i + 1}</span>
     <div class="rank-avatar">${p.avatar || '⚽'}</div>
     <div class="rank-info">
-      <span class="rank-name">${p.name}</span>
+      <div style="display: flex; align-items: center;">
+        <span class="rank-name">${p.name}</span>
+        ${deltaHtml}
+      </div>
       <span class="rank-status">${statusLabel}</span>
     </div>
     <span class="rank-score">${p.score || 0}</span>
+    ${floaterHtml}
   </div>`;
 }
 
@@ -248,23 +252,6 @@ function renderSidebar() {
   container.innerHTML = sorted.map((p, i) => itemHtml(p, i)).join('');
 }
 
-function renderAssignRows() {
-  const rows = document.getElementById('assign-rows');
-  rows.innerHTML = Object.values(players).map(p => {
-    const ans = p.answered || {};
-    return `
-      <div class="assign-row" data-pid="${p.id}">
-        <div style="display:flex; flex-direction:column;">
-          <span class="name">${p.avatar || '⚽'} ${p.name}</span>
-          <span style="font-size: 10px; color: var(--gold);">${p.lastAnswer ? `R: ${p.lastAnswer.scorer} (${p.lastAnswer.home}-${p.lastAnswer.away})` : 'Sin respuesta'}</span>
-        </div>
-        <input type="checkbox" data-cat="jugador" ${ans.jugador ? 'checked disabled' : ''} />
-        <input type="checkbox" data-cat="partido" ${ans.partido ? 'checked disabled' : ''} />
-        <input type="checkbox" data-cat="marcador" ${ans.marcador ? 'checked disabled' : ''} />
-      </div>
-    `;
-  }).join('');
-}
 
 
 
@@ -272,37 +259,59 @@ function closeAssignOnly() {
   document.getElementById('assign-modal').classList.remove('open');
 }
 
-function saveAssign() {
-  const updates = {};
-  document.querySelectorAll('#assign-rows .assign-row').forEach(row => {
-    const pid = row.dataset.pid;
-    const p = players[pid];
-    if (!p) return;
-    const ans = p.answered || { jugador: false, partido: false, marcador: false };
-    let newScore = p.score || 0;
 
-    row.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      const cat = cb.dataset.cat;
-      if (cb.checked && !ans[cat]) {
-        newScore += CAT_PTS[cat];
-        ans[cat] = true;
-      }
-    });
+// Clonar el video actual para reproducirlo en el modal de evaluación
+function syncReviewVideo() {
+  const sourceMedia = document.querySelector('#video-frame video, #video-frame iframe');
+  const targetBox = document.getElementById('review-video-box');
+  targetBox.innerHTML = '';
 
-    updates[`rooms/${ROOM_ID}/players/${pid}/score`] = newScore;
-    updates[`rooms/${ROOM_ID}/players/${pid}/answered`] = ans;
-  });
+  if (sourceMedia) {
+    if (sourceMedia.tagName.toLowerCase() === 'iframe') {
+      targetBox.innerHTML = `<iframe src="${sourceMedia.src}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    } else {
+      targetBox.innerHTML = `<video src="${sourceMedia.src}" controls autoplay loop></video>`;
+    }
+  } else {
+    targetBox.innerHTML = '<p class="empty" style="padding-top: 50px;">No hay video cargado</p>';
+  }
 
-  update(ref(db), updates);
-  closeAssignOnly();
+  // Cargar las respuestas oficiales colocadas en el Host
+  const loc = document.getElementById('v-local').value.trim() || 'Local';
+  const vis = document.getElementById('v-visita').value.trim() || 'Visita';
+  const jug = document.getElementById('v-jugador').value.trim() || 'No especificado';
+  const marc = document.getElementById('v-marcador').value.trim() || '-';
+
+  document.getElementById('ref-jugador').textContent = jug;
+  document.getElementById('ref-partido').textContent = `${loc} vs ${vis}`;
+  document.getElementById('ref-marcador').textContent = marc;
 }
 
-function toggleReveal() {
-  revealed = !revealed;
-  document.getElementById('video-data-card').classList.toggle('is-revealed', revealed);
-  document.getElementById('reveal-btn').textContent = revealed ? 'Ocultar video' : 'Revelar video';
-  update(ref(db, `rooms/${ROOM_ID}`), { revealed });
-  refreshMediaFilter();
+function renderAssignRows() {
+  const container = document.getElementById('assign-rows');
+  const playerList = Object.values(players);
+
+  container.innerHTML = playerList.map(p => {
+    const ans = p.answered || {};
+    const last = p.lastAnswer || { scorer: 'Sin respuesta', home: 0, away: 0 };
+    return `
+      <div class="player-eval-card" data-pid="${p.id}">
+        <div class="eval-meta">
+          <strong>${p.avatar || '⚽'} ${p.name}</strong>
+          <span style="font-size:12px; color:var(--gold); font-weight:bold;">${p.score || 0} pts</span>
+        </div>
+        <div class="eval-answer-box">
+          <div>🎯 <b>Goleador:</b> "${last.scorer}"</div>
+          <div>🔢 <b>Marcador dicho:</b> ${last.home} - ${last.away}</div>
+        </div>
+        <div class="eval-checkboxes">
+          <label><input type="checkbox" data-cat="jugador" ${ans.jugador ? 'checked disabled' : ''} /> Jugador (+3)</label>
+          <label><input type="checkbox" data-cat="partido" ${ans.partido ? 'checked disabled' : ''} /> Partido (+2)</label>
+          <label><input type="checkbox" data-cat="marcador" ${ans.marcador ? 'checked disabled' : ''} /> Marcador (+1)</label>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function openAssign() {
@@ -313,17 +322,114 @@ function openAssign() {
   if (total === 0 || submitted < total) {
     return showNotification({
       title: 'Respuestas pendientes',
-      message: 'Aún faltan jugadores por enviar su predicción. Deben contestar todos antes de asignar puntos.',
+      message: 'Aún faltan jugadores por enviar su predicción. Deben contestar todos antes de evaluar.',
       icon: '⏳'
     });
   }
 
-  // Bloquea inmediatamente la edición en los teléfonos
+  // 1. Bloqueo en celulares
   update(ref(db, `rooms/${ROOM_ID}`), { pointsAssigning: true });
 
+  // 2. Cargar video y respuestas
+  syncReviewVideo();
   renderAssignRows();
   document.getElementById('assign-modal').classList.add('open');
 }
+
+// --- CEREMONIA Y ANIMACIÓN ESTILO MARIO KART ---
+async function saveAssign() {
+  const pointGains = {};
+  const updates = {};
+
+  // 1. Calcular puntos ganados en esta ronda
+  document.querySelectorAll('#assign-rows .player-eval-card').forEach(card => {
+    const pid = card.dataset.pid;
+    const p = players[pid];
+    if (!p) return;
+    const ans = p.answered || { jugador: false, partido: false, marcador: false };
+    let gain = 0;
+
+    card.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      const cat = cb.dataset.cat;
+      if (cb.checked && !ans[cat]) {
+        gain += CAT_PTS[cat];
+        ans[cat] = true;
+      }
+    });
+
+    pointGains[pid] = gain;
+    updates[`rooms/${ROOM_ID}/players/${pid}/score`] = (p.score || 0) + gain;
+    updates[`rooms/${ROOM_ID}/players/${pid}/answered`] = ans;
+  });
+
+  // Cerrar el modal para volver a la pantalla principal
+  closeAssignOnly();
+
+  // Guardar estado previo para la animación FLIP
+  const prevRankList = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
+  const oldPositions = {};
+  prevRankList.forEach((p, idx) => { oldPositions[p.id] = idx; });
+
+  const oldElements = {};
+  document.querySelectorAll('#sidebar-list .rank-row').forEach(el => {
+    oldElements[el.dataset.pid] = el.getBoundingClientRect();
+  });
+
+  // 2. Persistir en Firebase
+  await update(ref(db), updates);
+
+  // 3. Renderizar nueva tabla con flechas e indicadores
+  const container = document.getElementById('sidebar-list');
+  const updatedRankList = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
+
+  container.innerHTML = updatedRankList.map((p, newIdx) => {
+    const oldIdx = oldPositions[p.id];
+    let deltaHtml = '';
+    if (oldIdx !== undefined) {
+      if (newIdx < oldIdx) {
+        deltaHtml = `<span class="rank-delta up">▲ +${oldIdx - newIdx}</span>`;
+      } else if (newIdx > oldIdx) {
+        deltaHtml = `<span class="rank-delta down">▼ -${newIdx - oldIdx}</span>`;
+      } else {
+        deltaHtml = `<span class="rank-delta same">● 0</span>`;
+      }
+    }
+
+    const floaterHtml = (pointGains[p.id] > 0) ? `<div class="score-floater">+${pointGains[p.id]} PTS</div>` : '';
+    return itemHtml(p, newIdx, deltaHtml, floaterHtml);
+  }).join('');
+
+  // 4. Animar el intercambio de posiciones (FLIP Animation)
+  document.querySelectorAll('#sidebar-list .rank-row').forEach(newEl => {
+    const pid = newEl.dataset.pid;
+    const oldRect = oldElements[pid];
+    if (oldRect) {
+      const newRect = newEl.getBoundingClientRect();
+      const deltaY = oldRect.top - newRect.top;
+
+      // Invertir posición inicial
+      newEl.style.transform = `translateY(${deltaY}px)`;
+      newEl.style.transition = 'none';
+
+      // Reproducir hacia la nueva posición
+      requestAnimationFrame(() => {
+        newEl.style.transition = 'transform 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2)';
+        newEl.style.transform = 'translateY(0)';
+      });
+    }
+  });
+}
+
+
+function toggleReveal() {
+  revealed = !revealed;
+  document.getElementById('video-data-card').classList.toggle('is-revealed', revealed);
+  document.getElementById('reveal-btn').textContent = revealed ? 'Ocultar video' : 'Revelar video';
+  update(ref(db, `rooms/${ROOM_ID}`), { revealed });
+  refreshMediaFilter();
+}
+
+
 
 function nextVideo() {
   round += 1;
