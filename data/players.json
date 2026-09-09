@@ -1,0 +1,93 @@
+[
+  {
+    "id": "p_001",
+    "name": "Esteban Paredes",
+    "team": "Colo-Colo",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/m2a8p91572979243.png"
+  },
+  {
+    "id": "p_002",
+    "name": "Arturo Vidal",
+    "team": "Colo-Colo",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/vidal_arturo.png"
+  },
+  {
+    "id": "p_003",
+    "name": "Alexis Sánchez",
+    "team": "Udinese",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/alexis_sanchez.png"
+  },
+  {
+    "id": "p_004",
+    "name": "Humberto Suazo",
+    "team": "San Luis",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/suazo_humberto.png"
+  },
+  {
+    "id": "p_005",
+    "name": "Marcelo Salas",
+    "team": "U. de Chile",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/thumb/salas_marcelo.jpg"
+  },
+  {
+    "id": "p_006",
+    "name": "Eduardo Vargas",
+    "team": "Atlético Mineiro",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/vargas_eduardo.png"
+  },
+  {
+    "id": "p_007",
+    "name": "Charles Aránguiz",
+    "team": "U. de Chile",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/aranguiz_charles.png"
+  },
+  {
+    "id": "p_008",
+    "name": "Matías Fernández",
+    "team": "Colo-Colo",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/fernandez_matias.png"
+  },
+  {
+    "id": "p_009",
+    "name": "Carlos Caszely",
+    "team": "Colo-Colo",
+    "country": "Chile",
+    "photo": "https://www.thesportsdb.com/images/media/player/thumb/caszely_carlos.jpg"
+  },
+  {
+    "id": "p_010",
+    "name": "Lionel Messi",
+    "team": "Inter Miami",
+    "country": "Argentina",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/messi_lionel.png"
+  },
+  {
+    "id": "p_011",
+    "name": "Cristiano Ronaldo",
+    "team": "Al Nassr",
+    "country": "Portugal",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/ronaldo_cristiano.png"
+  },
+  {
+    "id": "p_012",
+    "name": "Zinedine Zidane",
+    "team": "Real Madrid",
+    "country": "Francia",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/zidane_zinedine.png"
+  },
+  {
+    "id": "p_013",
+    "name": "Ronaldinho",
+    "team": "Barcelona",
+    "country": "Brasil",
+    "photo": "https://www.thesportsdb.com/images/media/player/cutout/ronaldinho.png"
+  }
+]

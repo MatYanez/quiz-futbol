@@ -30,24 +30,20 @@ if (savedNick) {
   if (nickInput) nickInput.value = savedNick;
 }
 
-const DB_PLAYERS = [
-  { name: 'Esteban Paredes', country: 'Chile', team: 'Colo-Colo' },
-  { name: 'Humberto Suazo', country: 'Chile', team: 'Colo-Colo' },
-  { name: 'Marcelo Salas', country: 'Chile', team: 'U. de Chile' },
-  { name: 'Eduardo Vargas', country: 'Chile', team: 'U. de Chile' },
-  { name: 'Carlos Caszely', country: 'Chile', team: 'Colo-Colo' },
-  { name: 'Arturo Vidal', country: 'Chile', team: 'Colo-Colo' },
-  { name: 'Alexis Sánchez', country: 'Chile', team: 'Colo-Colo' },
-  { name: 'Diego Rivarola', country: 'Argentina', team: 'U. de Chile' },
-  { name: 'Lucas Barrios', country: 'Paraguay', team: 'Colo-Colo' },
-  { name: 'Walter Montillo', country: 'Argentina', team: 'U. de Chile' },
-  { name: 'Matías Fernández', country: 'Chile', team: 'Colo-Colo' },
-  { name: 'Charles Aránguiz', country: 'Chile', team: 'U. de Chile' },
-  { name: 'Lionel Messi', country: 'Argentina', team: 'Barcelona' },
-  { name: 'Cristiano Ronaldo', country: 'Portugal', team: 'Real Madrid' },
-  { name: 'Zinedine Zidane', country: 'Francia', team: 'Real Madrid' },
-  { name: 'Ronaldinho', country: 'Brasil', team: 'Barcelona' }
-];
+let DB_PLAYERS = [];
+const DEFAULT_PLAYER_IMG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239FBBAA"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z"/></svg>';
+
+// Cargar la base de datos local desde data/players.json
+async function loadPlayersDatabase() {
+  try {
+    const res = await fetch('data/players.json');
+    DB_PLAYERS = await res.json();
+    initDropdownData();
+  } catch (err) {
+    DB_PLAYERS = [];
+  }
+}
+loadPlayersDatabase();
 
 // Avatares
 const avatarGrid = document.getElementById('mobile-avatars');
@@ -246,9 +242,12 @@ window.handleTypingScorer = function(val) {
   if (!filtered.length) { box.style.display = 'none'; return; }
 
   box.innerHTML = filtered.slice(0, 5).map(p => `
-    <div class="sugg-item" onclick="selectPlayer('${p.name}')">
-      <span>${p.name}</span>
-      <span class="sugg-meta">${p.team} · ${p.country}</span>
+    <div class="sugg-item" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
+      <img class="sugg-avatar" src="${p.photo || DEFAULT_PLAYER_IMG}" onerror="this.src='${DEFAULT_PLAYER_IMG}'" alt="${p.name}" />
+      <div class="sugg-details">
+        <span class="sugg-name">${p.name}</span>
+        <span class="sugg-meta">${p.team} · ${p.country}</span>
+      </div>
     </div>
   `).join('');
   box.style.display = 'flex';
@@ -330,9 +329,12 @@ window.filterModalPlayers = function() {
   document.getElementById('results-count').textContent = results.length;
   const list = document.getElementById('modal-results-list');
   list.innerHTML = results.length ? results.map(p => `
-    <div class="player-card-result" onclick="selectPlayer('${p.name}')">
-      <strong>${p.name}</strong>
-      <span class="sugg-meta">${p.team} (${p.country})</span>
+    <div class="player-card-result" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
+      <img class="player-card-img" src="${p.photo || DEFAULT_PLAYER_IMG}" onerror="this.src='${DEFAULT_PLAYER_IMG}'" alt="${p.name}" />
+      <div class="player-card-info">
+        <strong>${p.name}</strong>
+        <span class="sugg-meta">${p.team} (${p.country})</span>
+      </div>
     </div>
   `).join('') : '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">No se encontraron jugadores</p>';
 };

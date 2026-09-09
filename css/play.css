@@ -53,12 +53,24 @@ input:focus { border-color: var(--gold); }
   border-radius: 10px; max-height: 180px; overflow-y: auto; z-index: 30;
   display: none; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
+
 .sugg-item {
-  padding: 10px 14px; border-bottom: 1px solid var(--border);
-  cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; gap: 10px;
   font-size: 14px;
 }
 .sugg-item:hover, .sugg-item:active { background: var(--border); }
+.sugg-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  object-fit: cover; flex-shrink: 0;
+}
+.sugg-details {
+  display: flex; flex-direction: column; min-width: 0; flex: 1;
+}
+.sugg-name {
+  font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .sugg-meta { font-size: 11px; color: var(--text-muted); }
 
 /* Stepper Marcador */
@@ -140,12 +152,22 @@ button.btn-submit {
 .results-list {
   display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; min-height: 0;
 }
+
 .player-card-result {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; align-items: center; gap: 12px;
   background: var(--surface-2); border: 1px solid var(--border);
-  padding: 10px 14px; border-radius: 8px; cursor: pointer;
+  padding: 8px 12px; border-radius: 10px; cursor: pointer;
+  transition: border-color 150ms ease;
 }
 .player-card-result:active { border-color: var(--gold); background: var(--border); }
+.player-card-img {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  object-fit: cover; flex-shrink: 0;
+}
+.player-card-info {
+  display: flex; flex-direction: column; min-width: 0; flex: 1;
+}
 
 /* MODALES PERSONALIZADOS DEL SISTEMA */
 .custom-dialog-overlay {
