@@ -233,25 +233,7 @@ window.editAnswer = function() {
   document.getElementById('form-container').style.display = 'block';
 };
 
-window.handleTypingScorer = function(val) {
-  const query = val.trim().toLowerCase();
-  const box = document.getElementById('suggestions-box');
-  if (!query) { box.style.display = 'none'; return; }
 
-  const filtered = DB_PLAYERS.filter(p => p.name.toLowerCase().includes(query));
-  if (!filtered.length) { box.style.display = 'none'; return; }
-
-  box.innerHTML = filtered.slice(0, 5).map(p => `
-    <div class="sugg-item" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
-      <img class="sugg-avatar" src="${p.photo || DEFAULT_PLAYER_IMG}" onerror="this.src='${DEFAULT_PLAYER_IMG}'" alt="${p.name}" />
-      <div class="sugg-details">
-        <span class="sugg-name">${p.name}</span>
-        <span class="sugg-meta">${p.team} · ${p.country}</span>
-      </div>
-    </div>
-  `).join('');
-  box.style.display = 'flex';
-};
 
 window.selectPlayer = function(name) {
   document.getElementById('answer-scorer').value = name;
@@ -314,6 +296,33 @@ window.closeSearchModal = function() {
   document.getElementById('search-modal').classList.remove('open');
 };
 
+window.handleTypingScorer = function(val) {
+  const query = val.trim().toLowerCase();
+  const box = document.getElementById('suggestions-box');
+  if (!query) { box.style.display = 'none'; return; }
+
+  const filtered = DB_PLAYERS.filter(p => p.name.toLowerCase().includes(query));
+  if (!filtered.length) { box.style.display = 'none'; return; }
+
+  box.innerHTML = filtered.slice(0, 5).map(p => `
+    <div class="sugg-item" data-name="${encodeURIComponent(p.name)}">
+      <img class="sugg-avatar" src="${p.photo || DEFAULT_PLAYER_IMG}" referrerpolicy="no-referrer" onerror="this.src='${DEFAULT_PLAYER_IMG}'" />
+      <div class="sugg-details">
+        <span class="sugg-name">${p.name}</span>
+        <span class="sugg-meta">${p.team} · ${p.country}</span>
+      </div>
+    </div>
+  `).join('');
+
+  box.querySelectorAll('.sugg-item').forEach(item => {
+    item.addEventListener('click', () => {
+      selectPlayer(decodeURIComponent(item.dataset.name));
+    });
+  });
+
+  box.style.display = 'flex';
+};
+
 window.filterModalPlayers = function() {
   const country = document.getElementById('modal-filter-country').value.trim().toLowerCase();
   const team = document.getElementById('modal-filter-team').value.trim().toLowerCase();
@@ -328,15 +337,27 @@ window.filterModalPlayers = function() {
 
   document.getElementById('results-count').textContent = results.length;
   const list = document.getElementById('modal-results-list');
-  list.innerHTML = results.length ? results.map(p => `
-    <div class="player-card-result" onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}')">
-      <img class="player-card-img" src="${p.photo || DEFAULT_PLAYER_IMG}" onerror="this.src='${DEFAULT_PLAYER_IMG}'" alt="${p.name}" />
+
+  if (!results.length) {
+    list.innerHTML = '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">No se encontraron jugadores</p>';
+    return;
+  }
+
+  list.innerHTML = results.map(p => `
+    <div class="player-card-result" data-name="${encodeURIComponent(p.name)}">
+      <img class="player-card-img" src="${p.photo || DEFAULT_PLAYER_IMG}" referrerpolicy="no-referrer" onerror="this.src='${DEFAULT_PLAYER_IMG}'" />
       <div class="player-card-info">
         <strong>${p.name}</strong>
         <span class="sugg-meta">${p.team} (${p.country})</span>
       </div>
     </div>
-  `).join('') : '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">No se encontraron jugadores</p>';
+  `).join('');
+
+  list.querySelectorAll('.player-card-result').forEach(card => {
+    card.addEventListener('click', () => {
+      selectPlayer(decodeURIComponent(card.dataset.name));
+    });
+  });
 };
 
 document.addEventListener('click', (e) => {
