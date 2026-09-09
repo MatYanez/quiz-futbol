@@ -296,16 +296,44 @@ window.closeSearchModal = function() {
   document.getElementById('search-modal').classList.remove('open');
 };
 
+// Función para mezclar un arreglo aleatoriamente (Fisher-Yates)
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 window.handleTypingScorer = function(val) {
   const query = val.trim().toLowerCase();
   const box = document.getElementById('suggestions-box');
-  if (!query) { box.style.display = 'none'; return; }
+  if (!query || query.length < 2) { 
+    box.style.display = 'none'; 
+    return; 
+  }
 
-  const filtered = DB_PLAYERS.filter(p => p.name.toLowerCase().includes(query));
-  if (!filtered.length) { box.style.display = 'none'; return; }
+  // Recolectar hasta un pool de 30 coincidencias rápidas para no congelar el hilo
+  const matches = [];
+  for (let i = 0; i < DB_PLAYERS.length; i++) {
+    const p = DB_PLAYERS[i];
+    if (p.name && p.name.toLowerCase().includes(query)) {
+      matches.push(p);
+      if (matches.length >= 30) break;
+    }
+  }
+
+  if (!matches.length) { 
+    box.style.display = 'none'; 
+    return; 
+  }
+
+  // Barajar y tomar exactamente 5 distintos
+  const displayItems = shuffleArray(matches).slice(0, 5);
 
   box.innerHTML = '';
-  filtered.slice(0, 6).forEach(p => {
+  displayItems.forEach(p => {
     const row = document.createElement('div');
     row.className = 'sugg-item';
 
@@ -324,7 +352,7 @@ window.handleTypingScorer = function(val) {
 
     const metaSpan = document.createElement('span');
     metaSpan.className = 'sugg-meta';
-    metaSpan.textContent = `${p.team} · ${p.country}`;
+    metaSpan.textContent = `${p.team || 'Sin club'} · ${p.country || ''}`;
 
     details.appendChild(nameSpan);
     details.appendChild(metaSpan);
@@ -344,23 +372,44 @@ window.filterModalPlayers = function() {
   const team = document.getElementById('modal-filter-team').value.trim().toLowerCase();
   const text = document.getElementById('modal-search-text').value.trim().toLowerCase();
 
-  const results = DB_PLAYERS.filter(p => {
-    const matchCountry = country ? p.country.toLowerCase().includes(country) : true;
-    const matchTeam = team ? p.team.toLowerCase().includes(team) : true;
-    const matchText = text ? p.name.toLowerCase().includes(text) : true;
-    return matchCountry && matchTeam && matchText;
-  });
-
-  document.getElementById('results-count').textContent = results.length;
   const list = document.getElementById('modal-results-list');
+  const countBadge = document.getElementById('results-count');
+
+  // Si no hay ningún filtro aplicado, mostrar un mensaje para evitar traer miles de registros
+  if (!country && !team && text.length < 2) {
+    countBadge.textContent = '0';
+    list.innerHTML = '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">Escribe al menos 2 letras o selecciona un país/equipo.</p>';
+    return;
+  }
+
+  // Tope estricto de búsqueda para garantizar 60 FPS en móvil
+  const MAX_POOL = 40;
+  const matches = [];
+
+  for (let i = 0; i < DB_PLAYERS.length; i++) {
+    const p = DB_PLAYERS[i];
+    const matchCountry = country ? (p.country && p.country.toLowerCase().includes(country)) : true;
+    const matchTeam = team ? (p.team && p.team.toLowerCase().includes(team)) : true;
+    const matchText = text ? (p.name && p.name.toLowerCase().includes(text)) : true;
+
+    if (matchCountry && matchTeam && matchText) {
+      matches.push(p);
+      if (matches.length >= MAX_POOL) break;
+    }
+  }
+
+  // Barajar y limitar a máximo 10 tarjetas para no saturar el DOM
+  const displayResults = shuffleArray(matches).slice(0, 10);
+
+  countBadge.textContent = matches.length >= MAX_POOL ? `${displayResults.length} de +${MAX_POOL}` : displayResults.length;
   list.innerHTML = '';
 
-  if (!results.length) {
+  if (!displayResults.length) {
     list.innerHTML = '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">No se encontraron jugadores</p>';
     return;
   }
 
-  results.forEach(p => {
+  displayResults.forEach(p => {
     const card = document.createElement('div');
     card.className = 'player-card-result';
 
@@ -378,7 +427,7 @@ window.filterModalPlayers = function() {
 
     const meta = document.createElement('span');
     meta.className = 'sugg-meta';
-    meta.textContent = `${p.team} (${p.country})`;
+    meta.textContent = `${p.team || 'Sin club'} (${p.country || ''})`;
 
     info.appendChild(strong);
     info.appendChild(meta);
