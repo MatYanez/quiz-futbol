@@ -252,7 +252,13 @@ function renderSidebar() {
   container.innerHTML = sorted.map((p, i) => itemHtml(p, i)).join('');
 }
 
-
+function cleanString(str) {
+  return (str || '')
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
 
 
 function closeAssignOnly() {
@@ -260,7 +266,6 @@ function closeAssignOnly() {
 }
 
 
-// Clonar el video actual para reproducirlo en el modal de evaluación
 function syncReviewVideo() {
   const sourceMedia = document.querySelector('#video-frame video, #video-frame iframe');
   const targetBox = document.getElementById('review-video-box');
@@ -276,38 +281,57 @@ function syncReviewVideo() {
     targetBox.innerHTML = '<p class="empty" style="padding-top: 50px;">No hay video cargado</p>';
   }
 
-  // Cargar las respuestas oficiales colocadas en el Host
   const loc = document.getElementById('v-local').value.trim() || 'Local';
   const vis = document.getElementById('v-visita').value.trim() || 'Visita';
   const jug = document.getElementById('v-jugador').value.trim() || 'No especificado';
-  const marc = document.getElementById('v-marcador').value.trim() || '-';
+  const marc = document.getElementById('v-marcador').value.trim() || '0-0';
 
   document.getElementById('ref-jugador').textContent = jug;
-  document.getElementById('ref-partido').textContent = `${loc} vs ${vis}`;
   document.getElementById('ref-marcador').textContent = marc;
+  document.getElementById('ref-partido').textContent = `${loc} vs ${vis}`;
 }
 
+let calculatedGains = {};
+
 function renderAssignRows() {
-  const container = document.getElementById('assign-rows');
+  const container = document.getElementById('assign-table-body');
   const playerList = Object.values(players);
 
+  const officialScorer = cleanString(document.getElementById('v-jugador').value);
+  const officialScore = cleanString(document.getElementById('v-marcador').value).replace(/\s+/g, '');
+
+  calculatedGains = {};
+
   container.innerHTML = playerList.map(p => {
-    const ans = p.answered || {};
     const last = p.lastAnswer || { scorer: 'Sin respuesta', home: 0, away: 0 };
+    const playerScorer = cleanString(last.scorer);
+    const playerScoreStr = `${last.home}-${last.away}`;
+
+    const hitScorer = officialScorer.length > 2 && (officialScorer.includes(playerScorer) || playerScorer.includes(officialScorer));
+    const hitScore = officialScore.length >= 3 && officialScore === playerScoreStr;
+
+    let gain = 0;
+    if (hitScorer) gain += CAT_PTS.jugador;
+    if (hitScore) gain += CAT_PTS.marcador;
+
+    calculatedGains[p.id] = gain;
+
     return `
-      <div class="player-eval-card" data-pid="${p.id}">
-        <div class="eval-meta">
-          <strong>${p.avatar || '⚽'} ${p.name}</strong>
-          <span style="font-size:12px; color:var(--gold); font-weight:bold;">${p.score || 0} pts</span>
+      <div class="review-table-row ${gain > 0 ? 'correct-hit' : ''}">
+        <div class="cell-player">
+          <span>${p.avatar || '⚽'}</span>
+          <span>${p.name}</span>
         </div>
-        <div class="eval-answer-box">
-          <div>🎯 <b>Goleador:</b> "${last.scorer}"</div>
-          <div>🔢 <b>Marcador dicho:</b> ${last.home} - ${last.away}</div>
+        <div class="cell-val">
+          <span class="badge-hit ${hitScorer ? 'yes' : 'no'}">${hitScorer ? '✓' : '✕'}</span>
+          <span>${last.scorer}</span>
         </div>
-        <div class="eval-checkboxes">
-          <label><input type="checkbox" data-cat="jugador" ${ans.jugador ? 'checked disabled' : ''} /> Jugador (+3)</label>
-          <label><input type="checkbox" data-cat="partido" ${ans.partido ? 'checked disabled' : ''} /> Partido (+2)</label>
-          <label><input type="checkbox" data-cat="marcador" ${ans.marcador ? 'checked disabled' : ''} /> Marcador (+1)</label>
+        <div class="cell-val">
+          <span class="badge-hit ${hitScore ? 'yes' : 'no'}">${hitScore ? '✓' : '✕'}</span>
+          <span>${last.home} - ${last.away}</span>
+        </div>
+        <div class="cell-pts-gain">
+          +${gain}
         </div>
       </div>
     `;
@@ -327,45 +351,49 @@ function openAssign() {
     });
   }
 
-  // 1. Bloqueo en celulares
   update(ref(db, `rooms/${ROOM_ID}`), { pointsAssigning: true });
 
-  // 2. Cargar video y respuestas
   syncReviewVideo();
   renderAssignRows();
   document.getElementById('assign-modal').classList.add('open');
 }
 
-// --- CEREMONIA Y ANIMACIÓN ESTILO MARIO KART ---
+function openAssign() {
+  const playerArray = Object.values(players);
+  const total = playerArray.length;
+  const submitted = playerArray.filter(p => p.submitted).length;
+
+  if (total === 0 || submitted < total) {
+    return showNotification({
+      title: 'Respuestas pendientes',
+      message: 'Aún faltan jugadores por enviar su predicción. Deben contestar todos antes de evaluar.',
+      icon: '⏳'
+    });
+  }
+
+  update(ref(db, `rooms/${ROOM_ID}`), { pointsAssigning: true });
+
+  syncReviewVideo();
+  renderAssignRows();
+  document.getElementById('assign-modal').classList.add('open');
+}
+
+function closeAssignOnly() {
+  document.getElementById('assign-modal').classList.remove('open');
+}
+
 async function saveAssign() {
-  const pointGains = {};
   const updates = {};
 
-  // 1. Calcular puntos ganados en esta ronda
-  document.querySelectorAll('#assign-rows .player-eval-card').forEach(card => {
-    const pid = card.dataset.pid;
+  Object.keys(calculatedGains).forEach(pid => {
     const p = players[pid];
     if (!p) return;
-    const ans = p.answered || { jugador: false, partido: false, marcador: false };
-    let gain = 0;
-
-    card.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      const cat = cb.dataset.cat;
-      if (cb.checked && !ans[cat]) {
-        gain += CAT_PTS[cat];
-        ans[cat] = true;
-      }
-    });
-
-    pointGains[pid] = gain;
+    const gain = calculatedGains[pid] || 0;
     updates[`rooms/${ROOM_ID}/players/${pid}/score`] = (p.score || 0) + gain;
-    updates[`rooms/${ROOM_ID}/players/${pid}/answered`] = ans;
   });
 
-  // Cerrar el modal para volver a la pantalla principal
   closeAssignOnly();
 
-  // Guardar estado previo para la animación FLIP
   const prevRankList = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
   const oldPositions = {};
   prevRankList.forEach((p, idx) => { oldPositions[p.id] = idx; });
@@ -375,10 +403,8 @@ async function saveAssign() {
     oldElements[el.dataset.pid] = el.getBoundingClientRect();
   });
 
-  // 2. Persistir en Firebase
   await update(ref(db), updates);
 
-  // 3. Renderizar nueva tabla con flechas e indicadores
   const container = document.getElementById('sidebar-list');
   const updatedRankList = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
 
@@ -395,11 +421,11 @@ async function saveAssign() {
       }
     }
 
-    const floaterHtml = (pointGains[p.id] > 0) ? `<div class="score-floater">+${pointGains[p.id]} PTS</div>` : '';
+    const gain = calculatedGains[p.id] || 0;
+    const floaterHtml = (gain > 0) ? `<div class="score-floater">+${gain} PTS</div>` : '';
     return itemHtml(p, newIdx, deltaHtml, floaterHtml);
   }).join('');
 
-  // 4. Animar el intercambio de posiciones (FLIP Animation)
   document.querySelectorAll('#sidebar-list .rank-row').forEach(newEl => {
     const pid = newEl.dataset.pid;
     const oldRect = oldElements[pid];
@@ -407,19 +433,16 @@ async function saveAssign() {
       const newRect = newEl.getBoundingClientRect();
       const deltaY = oldRect.top - newRect.top;
 
-      // Invertir posición inicial
       newEl.style.transform = `translateY(${deltaY}px)`;
       newEl.style.transition = 'none';
 
-      // Reproducir hacia la nueva posición
       requestAnimationFrame(() => {
-        newEl.style.transition = 'transform 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2)';
+        newEl.style.transition = 'transform 750ms cubic-bezier(0.2, 0.9, 0.3, 1.2)';
         newEl.style.transform = 'translateY(0)';
       });
     }
   });
 }
-
 
 function toggleReveal() {
   revealed = !revealed;

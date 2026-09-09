@@ -212,12 +212,217 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .custom-dialog-actions { display: flex; gap: 10px; justify-content: center; }
 .custom-dialog-actions button { flex: 1; padding: 10px 14px; font-size: 12px; }
 
-/* --- ANIMACIÓN ESTILO MARIO KART & EVALUACIÓN --- */
+/* --- MODAL HORIZONTAL DE REVISIÓN Y TABLA AUTOMÁTICA --- */
 .modal-review-wide {
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: 16px; padding: 24px; width: 100%; max-width: 860px;
-  max-height: 90vh; display: flex; flex-direction: column; gap: 16px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.8); animation: dialogPop 180ms ease;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+  padding: 24px;
+  width: 95vw;
+  max-width: 1200px;
+  height: 88vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+  animation: dialogPop 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.review-horizontal-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 24px;
+  min-height: 0;
+  flex: 1;
+}
+
+/* Columna Izquierda: Video + Caja de respuesta arriba */
+.review-col-video {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+.official-answer-card {
+  background: var(--surface-2);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(232, 178, 61, 0.15);
+}
+.official-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.official-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.official-val {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.review-video-container {
+  flex: 1;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.review-video-container iframe, .review-video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none;
+}
+
+/* Columna Derecha: Planilla de Jugadores */
+.review-col-players {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  min-height: 0;
+}
+
+.review-table-header {
+  display: grid;
+  grid-template-columns: 1.2fr 1.3fr 0.9fr 0.6fr;
+  padding: 8px 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.review-table-body {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.review-table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.3fr 0.9fr 0.6fr;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  transition: border-color 150ms ease;
+}
+.review-table-row.correct-hit {
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.cell-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cell-val {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.badge-hit {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.badge-hit.yes { background: rgba(74, 222, 128, 0.2); color: #4ADE80; }
+.badge-hit.no { background: rgba(217, 88, 74, 0.2); color: #D9584A; }
+
+.cell-pts-gain {
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold);
+  text-align: right;
+  padding-right: 6px;
+}
+
+/* Indicadores y animación Mario Kart */
+.rank-row {
+  transition: transform 600ms cubic-bezier(0.2, 0.9, 0.3, 1.2), background-color 300ms ease;
+  will-change: transform;
+}
+.rank-delta {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+.rank-delta.up { color: #4ADE80; background: rgba(74, 222, 128, 0.15); animation: bounceUp 400ms ease; }
+.rank-delta.down { color: #D9584A; background: rgba(217, 88, 74, 0.15); animation: shakeDown 400ms ease; }
+.rank-delta.same { color: var(--text-muted); }
+
+.score-floater {
+  position: absolute;
+  right: 14px;
+  top: -10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #21170A;
+  background: var(--gold);
+  padding: 2px 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(232, 178, 61, 0.5);
+  animation: floatScore 1.6s forwards ease-out;
+  pointer-events: none;
+  z-index: 20;
+}
+
+@keyframes floatScore {
+  0% { transform: translateY(8px) scale(0.6); opacity: 0; }
+  25% { transform: translateY(-4px) scale(1.15); opacity: 1; }
+  75% { transform: translateY(-16px) scale(1); opacity: 1; }
+  100% { transform: translateY(-28px) scale(0.8); opacity: 0; }
+}
+@keyframes bounceUp {
+  0% { transform: translateY(10px); opacity: 0; }
+  60% { transform: translateY(-3px); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes shakeDown {
+  0% { transform: translateY(-10px); opacity: 0; }
+  60% { transform: translateY(3px); }
+  100% { transform: translateY(0); opacity: 1; }
 }
 
 .review-grid {

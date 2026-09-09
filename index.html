@@ -100,40 +100,55 @@
   </div>
 </div>
 
-<!-- MODAL ESTILO SALA DE EVALUACIÓN CON VIDEO -->
+<!-- MODAL HORIZONTAL DE REVISIÓN CON EVALUACIÓN AUTOMÁTICA -->
 <div class="modal-overlay" id="assign-modal">
   <div class="modal-review-wide">
     <div class="modal-head">
-      <h3>🎬 Evaluar Respuestas & Asignar Puntos</h3>
+      <h3>⚽ Revisión de Jugada & Resultados</h3>
       <button class="modal-close" id="close-assign">✕</button>
     </div>
 
-    <div class="review-grid">
-      <!-- Columna Izquierda: Video grande y datos de referencia -->
-      <div class="review-video-preview">
-        <label>Video de la jugada</label>
-        <div class="review-video-container" id="review-video-box">
-          <p class="empty" style="padding-top: 50px;">No hay video cargado</p>
+    <div class="review-horizontal-layout">
+      <!-- Columna 1: Caja con respuesta oficial arriba + Video abajo -->
+      <div class="review-col-video">
+        <div class="official-answer-card">
+          <div class="official-item">
+            <span class="official-label">Goleador Oficial</span>
+            <span class="official-val" id="ref-jugador">---</span>
+          </div>
+          <div class="official-item">
+            <span class="official-label">Marcador Real</span>
+            <span class="official-val" id="ref-marcador">---</span>
+          </div>
+          <div class="official-item">
+            <span class="official-label">Partido</span>
+            <span class="official-val" id="ref-partido">---</span>
+          </div>
         </div>
-        <div class="correct-data-badge">
-          <div>⚽ <b>Goleador:</b> <span id="ref-jugador">---</span></div>
-          <div>⚔️ <b>Partido:</b> <span id="ref-partido">---</span></div>
-          <div>🔢 <b>Marcador:</b> <span id="ref-marcador">---</span></div>
+
+        <div class="review-video-container" id="review-video-box">
+          <p class="empty">No hay video cargado</p>
         </div>
       </div>
 
-      <!-- Columna Derecha: Tarjetas de jugadores y sus predicciones -->
-      <div style="display: flex; flex-direction: column; min-height: 0;">
-        <label>Predicciones de los jugadores</label>
-        <div class="review-players-scroll" id="assign-rows"></div>
+      <!-- Columna 2: Tabla de Jugadores vs Predicciones -->
+      <div class="review-col-players">
+        <div class="review-table-header">
+          <span>Jugador</span>
+          <span>Goleador dicho</span>
+          <span>Marcador</span>
+          <span style="text-align: right;">Pts</span>
+        </div>
+        <div class="review-table-body" id="assign-table-body"></div>
       </div>
     </div>
 
-    <button class="btn-gold btn-block" id="save-assign" style="font-size: 15px; letter-spacing: 1px;">
-      🏁 Calcular y ver Posiciones (Mario Kart)
+    <button class="btn-gold btn-block" id="save-assign" style="font-size: 16px; letter-spacing: 1px; padding: 16px;">
+      🏁 Continuar al Podio (Mario Kart)
     </button>
   </div>
 </div>
+
 
 <script type="module" src="js/host.js"></script>
 </body>
