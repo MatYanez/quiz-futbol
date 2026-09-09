@@ -31,7 +31,7 @@ if (savedNick) {
 }
 
 let DB_PLAYERS = [];
-const DEFAULT_PLAYER_IMG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239FBBAA"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z"/></svg>';
+const DEFAULT_PLAYER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239FBBAA'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z'/%3E%3C/svg%3E";
 
 // Cargar la base de datos local desde data/players.json
 async function loadPlayersDatabase() {
@@ -304,20 +304,36 @@ window.handleTypingScorer = function(val) {
   const filtered = DB_PLAYERS.filter(p => p.name.toLowerCase().includes(query));
   if (!filtered.length) { box.style.display = 'none'; return; }
 
-  box.innerHTML = filtered.slice(0, 5).map(p => `
-    <div class="sugg-item" data-name="${encodeURIComponent(p.name)}">
-      <img class="sugg-avatar" src="${p.photo || DEFAULT_PLAYER_IMG}" referrerpolicy="no-referrer" onerror="this.src='${DEFAULT_PLAYER_IMG}'" />
-      <div class="sugg-details">
-        <span class="sugg-name">${p.name}</span>
-        <span class="sugg-meta">${p.team} · ${p.country}</span>
-      </div>
-    </div>
-  `).join('');
+  box.innerHTML = '';
+  filtered.slice(0, 6).forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'sugg-item';
 
-  box.querySelectorAll('.sugg-item').forEach(item => {
-    item.addEventListener('click', () => {
-      selectPlayer(decodeURIComponent(item.dataset.name));
-    });
+    const img = document.createElement('img');
+    img.className = 'sugg-avatar';
+    img.referrerPolicy = 'no-referrer';
+    img.src = p.photo || DEFAULT_PLAYER_IMG;
+    img.onerror = () => { img.src = DEFAULT_PLAYER_IMG; };
+
+    const details = document.createElement('div');
+    details.className = 'sugg-details';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'sugg-name';
+    nameSpan.textContent = p.name;
+
+    const metaSpan = document.createElement('span');
+    metaSpan.className = 'sugg-meta';
+    metaSpan.textContent = `${p.team} · ${p.country}`;
+
+    details.appendChild(nameSpan);
+    details.appendChild(metaSpan);
+
+    row.appendChild(img);
+    row.appendChild(details);
+
+    row.onclick = () => selectPlayer(p.name);
+    box.appendChild(row);
   });
 
   box.style.display = 'flex';
@@ -337,26 +353,41 @@ window.filterModalPlayers = function() {
 
   document.getElementById('results-count').textContent = results.length;
   const list = document.getElementById('modal-results-list');
+  list.innerHTML = '';
 
   if (!results.length) {
     list.innerHTML = '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">No se encontraron jugadores</p>';
     return;
   }
 
-  list.innerHTML = results.map(p => `
-    <div class="player-card-result" data-name="${encodeURIComponent(p.name)}">
-      <img class="player-card-img" src="${p.photo || DEFAULT_PLAYER_IMG}" referrerpolicy="no-referrer" onerror="this.src='${DEFAULT_PLAYER_IMG}'" />
-      <div class="player-card-info">
-        <strong>${p.name}</strong>
-        <span class="sugg-meta">${p.team} (${p.country})</span>
-      </div>
-    </div>
-  `).join('');
+  results.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'player-card-result';
 
-  list.querySelectorAll('.player-card-result').forEach(card => {
-    card.addEventListener('click', () => {
-      selectPlayer(decodeURIComponent(card.dataset.name));
-    });
+    const img = document.createElement('img');
+    img.className = 'player-card-img';
+    img.referrerPolicy = 'no-referrer';
+    img.src = p.photo || DEFAULT_PLAYER_IMG;
+    img.onerror = () => { img.src = DEFAULT_PLAYER_IMG; };
+
+    const info = document.createElement('div');
+    info.className = 'player-card-info';
+
+    const strong = document.createElement('strong');
+    strong.textContent = p.name;
+
+    const meta = document.createElement('span');
+    meta.className = 'sugg-meta';
+    meta.textContent = `${p.team} (${p.country})`;
+
+    info.appendChild(strong);
+    info.appendChild(meta);
+
+    card.appendChild(img);
+    card.appendChild(info);
+
+    card.onclick = () => selectPlayer(p.name);
+    list.appendChild(card);
   });
 };
 
