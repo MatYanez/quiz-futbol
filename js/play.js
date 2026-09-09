@@ -443,3 +443,5 @@ window.filterModalPlayers = function() {
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.combo-wrap')) closeAllDropdowns();
 });
+
+  // cambio
