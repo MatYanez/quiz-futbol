@@ -260,12 +260,6 @@ function cleanString(str) {
     .trim();
 }
 
-
-function closeAssignOnly() {
-  document.getElementById('assign-modal').classList.remove('open');
-}
-
-
 function syncReviewVideo() {
   const sourceMedia = document.querySelector('#video-frame video, #video-frame iframe');
   const targetBox = document.getElementById('review-video-box');
