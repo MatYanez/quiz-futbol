@@ -153,20 +153,93 @@ button.btn-submit {
   display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; min-height: 0;
 }
 
+/* Grid de Cards Coleccionables con Foco en la Imagen */
+#modal-results-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 6px 2px;
+}
+
 .player-card-result {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--surface-2); border: 1px solid var(--border);
-  padding: 8px 12px; border-radius: 10px; cursor: pointer;
-  transition: border-color 150ms ease;
+  background: linear-gradient(180deg, var(--surface-2) 0%, rgba(11, 42, 31, 0.4) 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
-.player-card-result:active { border-color: var(--gold); background: var(--border); }
+
+.player-card-result:active {
+  transform: scale(0.97);
+  border-color: var(--gold);
+  box-shadow: 0 4px 16px rgba(232, 178, 61, 0.25);
+}
+
+.player-card-img-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+
 .player-card-img {
-  width: 42px; height: 42px; border-radius: 50%;
-  background: var(--surface); border: 1px solid var(--border-strong);
-  object-fit: cover; flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
 }
+
 .player-card-info {
-  display: flex; flex-direction: column; min-width: 0; flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.player-card-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.player-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.player-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-family: 'Oswald', sans-serif;
+  color: var(--gold);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(232, 178, 61, 0.3);
+  border-radius: 6px;
+  padding: 2px 6px;
+  text-transform: uppercase;
 }
 
 /* MODALES PERSONALIZADOS DEL SISTEMA */

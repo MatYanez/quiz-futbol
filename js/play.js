@@ -375,14 +375,12 @@ window.filterModalPlayers = function() {
   const list = document.getElementById('modal-results-list');
   const countBadge = document.getElementById('results-count');
 
-  // Si no hay ningún filtro aplicado, mostrar un mensaje para evitar traer miles de registros
   if (!country && !team && text.length < 2) {
     countBadge.textContent = '0';
-    list.innerHTML = '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">Escribe al menos 2 letras o selecciona un país/equipo.</p>';
+    list.innerHTML = '<p style="grid-column: span 2; color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">Escribe al menos 2 letras o selecciona un filtro.</p>';
     return;
   }
 
-  // Tope estricto de búsqueda para garantizar 60 FPS en móvil
   const MAX_POOL = 40;
   const matches = [];
 
@@ -398,14 +396,14 @@ window.filterModalPlayers = function() {
     }
   }
 
-  // Barajar y limitar a máximo 10 tarjetas para no saturar el DOM
-  const displayResults = shuffleArray(matches).slice(0, 10);
+  // 6 cards coleccionables aleatorias por tirada
+  const displayResults = shuffleArray(matches).slice(0, 6);
 
   countBadge.textContent = matches.length >= MAX_POOL ? `${displayResults.length} de +${MAX_POOL}` : displayResults.length;
   list.innerHTML = '';
 
   if (!displayResults.length) {
-    list.innerHTML = '<p style="color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">No se encontraron jugadores</p>';
+    list.innerHTML = '<p style="grid-column: span 2; color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">No se encontraron jugadores</p>';
     return;
   }
 
@@ -413,26 +411,41 @@ window.filterModalPlayers = function() {
     const card = document.createElement('div');
     card.className = 'player-card-result';
 
+    // Etiqueta superior del país
+    if (p.country) {
+      const badge = document.createElement('span');
+      badge.className = 'player-card-badge';
+      badge.textContent = p.country;
+      card.appendChild(badge);
+    }
+
+    // Contenedor principal de la foto
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'player-card-img-wrap';
+
     const img = document.createElement('img');
     img.className = 'player-card-img';
     img.referrerPolicy = 'no-referrer';
     img.src = p.photo || DEFAULT_PLAYER_IMG;
     img.onerror = () => { img.src = DEFAULT_PLAYER_IMG; };
+    imgWrap.appendChild(img);
 
+    // Datos inferiores
     const info = document.createElement('div');
     info.className = 'player-card-info';
 
-    const strong = document.createElement('strong');
-    strong.textContent = p.name;
+    const nameEl = document.createElement('span');
+    nameEl.className = 'player-card-name';
+    nameEl.textContent = p.name;
 
-    const meta = document.createElement('span');
-    meta.className = 'sugg-meta';
-    meta.textContent = `${p.team || 'Sin club'} (${p.country || ''})`;
+    const metaEl = document.createElement('span');
+    metaEl.className = 'player-card-meta';
+    metaEl.textContent = p.team || 'Sin club';
 
-    info.appendChild(strong);
-    info.appendChild(meta);
+    info.appendChild(nameEl);
+    info.appendChild(metaEl);
 
-    card.appendChild(img);
+    card.appendChild(imgWrap);
     card.appendChild(info);
 
     card.onclick = () => selectPlayer(p.name);
