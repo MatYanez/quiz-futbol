@@ -306,15 +306,26 @@ function shuffleArray(arr) {
   return copy;
 }
 
-window.handleTypingScorer = function(val) {
-  const query = val.trim().toLowerCase();
+window.selectPlayer = function(name) {
+  const input = document.getElementById('answer-scorer');
+  if (input) input.value = name;
   const box = document.getElementById('suggestions-box');
-  if (!query || query.length < 2) { 
-    box.style.display = 'none'; 
+  if (box) box.style.display = 'none';
+  const modal = document.getElementById('search-modal');
+  if (modal) modal.classList.remove('open');
+};
+
+window.handleTypingScorer = function(val) {
+  const query = (val || '').trim().toLowerCase();
+  const box = document.getElementById('suggestions-box');
+  if (!box) return;
+
+  if (!query || query.length < 1) { 
+    box.style.display = 'none';
+    box.innerHTML = '';
     return; 
   }
 
-  // Recolectar hasta un pool de 30 coincidencias rápidas para no congelar el hilo
   const matches = [];
   for (let i = 0; i < DB_PLAYERS.length; i++) {
     const p = DB_PLAYERS[i];
@@ -325,11 +336,11 @@ window.handleTypingScorer = function(val) {
   }
 
   if (!matches.length) { 
-    box.style.display = 'none'; 
+    box.style.display = 'none';
+    box.innerHTML = '';
     return; 
   }
 
-  // Barajar y tomar exactamente 5 distintos
   const displayItems = shuffleArray(matches).slice(0, 5);
 
   box.innerHTML = '';
@@ -360,7 +371,10 @@ window.handleTypingScorer = function(val) {
     row.appendChild(img);
     row.appendChild(details);
 
-    row.onclick = () => selectPlayer(p.name);
+    row.onmousedown = (e) => {
+      e.preventDefault();
+      window.selectPlayer(p.name);
+    };
     box.appendChild(row);
   });
 
@@ -457,4 +471,35 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('.combo-wrap')) closeAllDropdowns();
 });
 
-  // cambio
+
+// Listener para el input de texto del goleador (tecleo, enter y sugerencias)
+const scorerInput = document.getElementById('answer-scorer');
+if (scorerInput) {
+  scorerInput.addEventListener('input', (e) => {
+    window.handleTypingScorer(e.target.value);
+  });
+
+  scorerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const box = document.getElementById('suggestions-box');
+      const firstItem = box ? box.querySelector('.sugg-name') : null;
+      if (firstItem && box.style.display !== 'none') {
+        window.selectPlayer(firstItem.textContent);
+      } else {
+        if (box) box.style.display = 'none';
+        scorerInput.blur();
+      }
+    }
+  });
+
+  scorerInput.addEventListener('blur', () => {
+    setTimeout(() => {
+      const box = document.getElementById('suggestions-box');
+      if (box) box.style.display = 'none';
+    }, 200);
+  });
+}
+
+
+  // cambio 2
