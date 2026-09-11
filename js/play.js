@@ -33,17 +33,36 @@ if (savedNick) {
 let DB_PLAYERS = [];
 const DEFAULT_PLAYER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239FBBAA'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z'/%3E%3C/svg%3E";
 
-// Cargar la base de datos local desde data/players.json
+// Cargar la base de datos de jugadores y sincronizar países
 async function loadPlayersDatabase() {
   try {
     const res = await fetch('data/players.json');
-    DB_PLAYERS = await res.json();
+    const data = await res.json();
+    // Soporta formato plano [ {...} ] o estructurado { players: [...], countries: [...] }
+    DB_PLAYERS = Array.isArray(data) ? data : (data.players || []);
     initDropdownData();
+    populateMainCountrySelect();
   } catch (err) {
     DB_PLAYERS = [];
   }
 }
 loadPlayersDatabase();
+
+function populateMainCountrySelect() {
+  const select = document.getElementById('answer-country');
+  if (!select) return;
+  const countries = [...new Set(DB_PLAYERS.map(p => p.country).filter(Boolean))].sort();
+  select.innerHTML = '<option value="">Selecciona la selección...</option>' +
+    countries.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  select.addEventListener('change', () => {
+    // Al cambiar país, limpiar el input de goleador previo
+    const scorerInput = document.getElementById('answer-scorer');
+    if (scorerInput) scorerInput.value = '';
+    const box = document.getElementById('suggestions-box');
+    if (box) box.style.display = 'none';
+  });
+}
 
 // Avatares
 const avatarGrid = document.getElementById('mobile-avatars');
@@ -179,6 +198,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function resetMobileForm() {
+  const countrySelect = document.getElementById('answer-country');
+  if (countrySelect) countrySelect.value = '';
   document.getElementById('answer-scorer').value = '';
   homeScore = 0;
   awayScore = 0;
@@ -302,6 +323,14 @@ window.selectDropdownOption = function(inputId, dropdownId, value) {
 
 window.openSearchModal = function() {
   initDropdownData();
+
+  // Si ya marcó un país en el paso 1, rellenar el filtro del modal
+  const selectedCountry = document.getElementById('answer-country')?.value || '';
+  const modalCountryInput = document.getElementById('modal-filter-country');
+  if (modalCountryInput && selectedCountry) {
+    modalCountryInput.value = selectedCountry;
+  }
+
   document.getElementById('search-modal').classList.add('open');
   window.filterModalPlayers();
 };
@@ -341,10 +370,14 @@ window.handleTypingScorer = function(val) {
     return; 
   }
 
+  // Si ya seleccionó país en el paso 1, priorizar a los jugadores de esa selección
+  const selectedCountry = (document.getElementById('answer-country')?.value || '').trim().toLowerCase();
+
   const matches = [];
   for (let i = 0; i < DB_PLAYERS.length; i++) {
     const p = DB_PLAYERS[i];
-    if (p.name && p.name.toLowerCase().includes(query)) {
+    const matchCountry = selectedCountry ? (p.country && p.country.toLowerCase() === selectedCountry) : true;
+    if (matchCountry && p.name && p.name.toLowerCase().includes(query)) {
       matches.push(p);
       if (matches.length >= 30) break;
     }
