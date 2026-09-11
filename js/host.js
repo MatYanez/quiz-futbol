@@ -358,27 +358,33 @@ function closeAssignOnly() {
 
 async function saveAssign() {
   const updates = {};
+  const gainsSnapshot = { ...calculatedGains };
 
-  Object.keys(calculatedGains).forEach(pid => {
-    const p = players[pid];
-    if (!p) return;
-    const gain = calculatedGains[pid] || 0;
-    updates[`rooms/${ROOM_ID}/players/${pid}/score`] = (p.score || 0) + gain;
-  });
-
-  closeAssignOnly();
-
+  // 1. Guardar las posiciones previas de cada jugador en el DOM
   const prevRankList = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
   const oldPositions = {};
   prevRankList.forEach((p, idx) => { oldPositions[p.id] = idx; });
 
   const oldElements = {};
   document.querySelectorAll('#sidebar-list .rank-row').forEach(el => {
-    oldElements[el.dataset.pid] = el.getBoundingClientRect();
+    const pid = el.dataset.pid;
+    if (pid) oldElements[pid] = el.getBoundingClientRect();
   });
 
-  await update(ref(db), updates);
+  // 2. Preparar el lote de actualización para Firebase
+  Object.keys(players).forEach(pid => {
+    const p = players[pid];
+    const gain = gainsSnapshot[pid] || 0;
+    const currentScore = p.score || 0;
+    updates[`rooms/${ROOM_ID}/players/${pid}/score`] = currentScore + gain;
+    // Actualizar localmente de inmediato para que la animación no dependa del lag de red
+    p.score = currentScore + gain;
+  });
 
+  // Cerrar el modal para enfocar la tabla principal
+  closeAssignOnly();
+
+  // 3. Renderizar la tabla reordenada con los nuevos puestos
   const container = document.getElementById('sidebar-list');
   const updatedRankList = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
 
@@ -395,27 +401,35 @@ async function saveAssign() {
       }
     }
 
-    const gain = calculatedGains[p.id] || 0;
+    const gain = gainsSnapshot[p.id] || 0;
     const floaterHtml = (gain > 0) ? `<div class="score-floater">+${gain} PTS</div>` : '';
     return itemHtml(p, newIdx, deltaHtml, floaterHtml);
   }).join('');
 
-  document.querySelectorAll('#sidebar-list .rank-row').forEach(newEl => {
-    const pid = newEl.dataset.pid;
-    const oldRect = oldElements[pid];
-    if (oldRect) {
-      const newRect = newEl.getBoundingClientRect();
-      const deltaY = oldRect.top - newRect.top;
+  // 4. Ejecutar la animación FLIP (desplazamiento físico de las tarjetas)
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#sidebar-list .rank-row').forEach(newEl => {
+      const pid = newEl.dataset.pid;
+      const oldRect = oldElements[pid];
+      if (oldRect) {
+        const newRect = newEl.getBoundingClientRect();
+        const deltaY = oldRect.top - newRect.top;
 
-      newEl.style.transform = `translateY(${deltaY}px)`;
-      newEl.style.transition = 'none';
+        if (deltaY !== 0) {
+          newEl.style.transform = `translateY(${deltaY}px)`;
+          newEl.style.transition = 'none';
 
-      requestAnimationFrame(() => {
-        newEl.style.transition = 'transform 750ms cubic-bezier(0.2, 0.9, 0.3, 1.2)';
-        newEl.style.transform = 'translateY(0)';
-      });
-    }
+          requestAnimationFrame(() => {
+            newEl.style.transition = 'transform 800ms cubic-bezier(0.2, 0.9, 0.3, 1.2)';
+            newEl.style.transform = 'translateY(0)';
+          });
+        }
+      }
+    });
   });
+
+  // 5. Enviar actualización a Firebase en segundo plano
+  await update(ref(db), updates);
 }
 
 function toggleReveal() {
