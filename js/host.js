@@ -6,19 +6,15 @@ let roomsData = {};
 let players = {};
 let round = 1;
 let revealed = false;
-let blurAmount = 1.5; // Muy sutil, solo para suavizar bordes de texto
+let distortionLevel = 3;
 let qrInstance = null;
-
-// Filtro Espectral Invertido (Cámara Negativa / Azul-Magenta Neón):
-// 1. invert(1): Blancos pasan a negros, pasto pasa a púrpura/magenta
-// 2. hue-rotate(190deg): Vira todo hacia tonos cian, azul profundo y rosado antinatural
-// 3. contrast(2.3) + brightness(1.1): Hace destacar el balón y las siluetas sin revelar logos
-// 4. drop-shadow: Desfasa bordes ópticos para que los dorsales y caras no se puedan leer
-const ANON_COLOR = 'invert(1) hue-rotate(190deg) contrast(2.3) brightness(1.05) drop-shadow(2px 0px 1px rgba(255, 0, 128, 0.7)) drop-shadow(-2px 0px 1px rgba(0, 255, 255, 0.7))';
 const CAT_PTS = { jugador: 3, partido: 2, marcador: 1 };
 
 function currentFilter() {
-  return revealed ? 'none' : `blur(${blurAmount}px) ${ANON_COLOR}`;
+  if (revealed) return 'none';
+  const d = distortionLevel;
+  // Combina inversión lumínica + viraje cromático neón + doble aberración óptica
+  return `invert(1) hue-rotate(190deg) contrast(2.4) brightness(1.05) drop-shadow(${d}px 0px 1px rgba(255, 0, 128, 0.8)) drop-shadow(-${d}px 0px 1px rgba(0, 255, 255, 0.8)) blur(1px)`;
 }
 
 function refreshMediaFilter() {
@@ -270,16 +266,14 @@ function cleanString(str) {
 }
 
 function syncReviewVideo() {
-  const sourceMedia = document.querySelector('#video-frame video, #video-frame iframe');
+  const sourceMedia = document.querySelector('#video-frame iframe');
   const targetBox = document.getElementById('review-video-box');
   targetBox.innerHTML = '';
 
-  if (sourceMedia) {
-    if (sourceMedia.tagName.toLowerCase() === 'iframe') {
-      targetBox.innerHTML = `<iframe src="${sourceMedia.src}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-    } else {
-      targetBox.innerHTML = `<video src="${sourceMedia.src}" controls autoplay loop></video>`;
-    }
+  if (sourceMedia && sourceMedia.src) {
+    // Al pasar al modal de revisión, quitamos el mute=1 y el controls=0 para que se escuche el relato oficial
+    let reviewSrc = sourceMedia.src.replace('mute=1', 'mute=0').replace('controls=0', 'controls=1');
+    targetBox.innerHTML = `<iframe src="${reviewSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: none; width: 100%; height: 100%; border-radius: 8px; border: none;"></iframe>`;
   } else {
     targetBox.innerHTML = '<p class="empty" style="padding-top: 50px;">No hay video cargado</p>';
   }
@@ -622,18 +616,14 @@ function setupVideoFrame() {
   });
 }
 
-function setupBlurSlider() {
-  const slider = document.getElementById('blur-slider');
+function setupDistortionSlider() {
+  const slider = document.getElementById('distortion-slider');
+  const label = document.getElementById('distortion-value');
   if (!slider) return;
-  // Ajustamos el rango: de 1px (casi nítido) a 10px (máximo razonable para siluetas)
-  slider.min = "1";
-  slider.max = "10";
-  slider.value = "4";
-  document.getElementById('blur-value').textContent = '4px';
 
   slider.addEventListener('input', () => {
-    blurAmount = Number(slider.value);
-    document.getElementById('blur-value').textContent = blurAmount + 'px';
+    distortionLevel = Number(slider.value);
+    if (label) label.textContent = `Nivel ${distortionLevel}`;
     refreshMediaFilter();
   });
 }
@@ -651,6 +641,6 @@ document.getElementById('next-video-btn').addEventListener('click', nextVideo);
 loadMatchesDatabase();
 listenAllRooms();
 setupVideoFrame();
-setupBlurSlider();
+setupDistortionSlider();
 
   // my
