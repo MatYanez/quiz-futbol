@@ -442,21 +442,105 @@ function toggleReveal() {
 
 
 
+// --- CARGA Y CONTROL DE PARTIDOS DESDE data/matches.json ---
+let MATCH_PACKS = [];
+let currentPackIndex = 0;
+let currentMatchIndex = 0;
+
+async function loadMatchesDatabase() {
+  try {
+    const res = await fetch('data/matches.json');
+    MATCH_PACKS = await res.json();
+    initPackSelectors();
+  } catch (err) {
+    MATCH_PACKS = [];
+  }
+}
+
+function initPackSelectors() {
+  const packSelect = document.getElementById('pack-select');
+  const matchSelect = document.getElementById('match-select');
+  if (!packSelect || !matchSelect || !MATCH_PACKS.length) return;
+
+  packSelect.innerHTML = MATCH_PACKS.map((p, idx) => `
+    <option value="${idx}">${p.pack} (${p.matches.length} jugadas)</option>
+  `).join('');
+
+  updateMatchList(0);
+
+  packSelect.onchange = (e) => {
+    currentPackIndex = parseInt(e.target.value, 10);
+    updateMatchList(currentPackIndex);
+  };
+}
+
+function updateMatchList(packIdx) {
+  const matchSelect = document.getElementById('match-select');
+  const pack = MATCH_PACKS[packIdx];
+  if (!pack || !matchSelect) return;
+
+  matchSelect.innerHTML = pack.matches.map((m, idx) => `
+    <option value="${idx}">#${idx + 1} - ${m.title}</option>
+  `).join('');
+}
+
+function applyMatchData(match) {
+  if (!match) return;
+
+  // Llenar datos secretos oficiales de forma automática
+  document.getElementById('v-local').value = match.homeTeam || '';
+  document.getElementById('v-visita').value = match.awayTeam || '';
+  document.getElementById('v-jugador').value = match.scorer || '';
+  document.getElementById('v-marcador').value = match.score || '';
+
+  // Montar video en el reproductor con el blur activo
+  const ytId = getYouTubeId(match.videoUrl);
+  const driveId = getDriveId(match.videoUrl);
+  const frame = document.getElementById('video-frame');
+  let embedSrc = null;
+
+  if (ytId) embedSrc = `https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1&autoplay=1`;
+  else if (driveId) embedSrc = `https://drive.google.com/file/d/${driveId}/preview`;
+
+  if (embedSrc) {
+    frame.classList.add('has-video');
+    frame.innerHTML = `
+      <iframe src="${embedSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: ${currentFilter()}"></iframe>
+      <button class="swap-video-btn" id="swap-video">Cambiar video</button>
+    `;
+    document.getElementById('swap-video').addEventListener('click', (e) => {
+      e.stopPropagation();
+      frame.classList.remove('has-video');
+      frame.innerHTML = `<div class="play-dot">▶</div><p>Haz clic para cargar un video y probar cómo se ve</p>`;
+    });
+  }
+}
+
 function nextVideo() {
   round += 1;
   document.getElementById('round-num').textContent = round;
-  document.getElementById('v-local').value = '';
-  document.getElementById('v-visita').value = '';
-  document.getElementById('v-jugador').value = '';
-  document.getElementById('v-marcador').value = '';
   revealed = false;
   document.getElementById('video-data-card').classList.remove('is-revealed');
   refreshMediaFilter();
 
+  // Avanzar al siguiente gol del paquete de forma automática
+  const currentPack = MATCH_PACKS[currentPackIndex];
+  if (currentPack && currentMatchIndex + 1 < currentPack.matches.length) {
+    currentMatchIndex += 1;
+    applyMatchData(currentPack.matches[currentMatchIndex]);
+    const matchSelect = document.getElementById('match-select');
+    if (matchSelect) matchSelect.value = currentMatchIndex;
+  } else {
+    document.getElementById('v-local').value = '';
+    document.getElementById('v-visita').value = '';
+    document.getElementById('v-jugador').value = '';
+    document.getElementById('v-marcador').value = '';
+  }
+
   const updates = {};
   updates[`rooms/${ROOM_ID}/round`] = round;
   updates[`rooms/${ROOM_ID}/revealed`] = false;
-  updates[`rooms/${ROOM_ID}/pointsAssigning`] = false; // Se levanta el bloqueo para la nueva ronda
+  updates[`rooms/${ROOM_ID}/pointsAssigning`] = false;
   Object.keys(players).forEach(pid => {
     updates[`rooms/${ROOM_ID}/players/${pid}/submitted`] = false;
     updates[`rooms/${ROOM_ID}/players/${pid}/lastAnswer`] = null;
@@ -547,6 +631,19 @@ document.getElementById('yt-url').addEventListener('keydown', (e) => { if (e.key
 document.getElementById('reveal-btn').addEventListener('click', toggleReveal);
 document.getElementById('next-video-btn').addEventListener('click', nextVideo);
 
+const btnLoadMatch = document.getElementById('btn-load-match');
+if (btnLoadMatch) {
+  btnLoadMatch.addEventListener('click', () => {
+    const pack = MATCH_PACKS[currentPackIndex];
+    const matchSelect = document.getElementById('match-select');
+    if (pack && matchSelect) {
+      currentMatchIndex = parseInt(matchSelect.value, 10);
+      applyMatchData(pack.matches[currentMatchIndex]);
+    }
+  });
+}
+
+loadMatchesDatabase();
 listenAllRooms();
 setupVideoFrame();
 setupBlurSlider();

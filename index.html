@@ -53,9 +53,18 @@
 
   <div id="play-view">
     <div class="video-col">
-      <div class="row">
-        <input type="text" id="yt-url" placeholder="O pega un link de YouTube (no listado) o Google Drive" />
-        <button class="btn-gold" id="load-yt">Cargar</button>
+=<div class="row" style="gap: 8px; flex-wrap: wrap;">
+        <select id="pack-select" style="flex: 1; min-width: 180px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 13px; outline: none;">
+          <!-- Paquetes cargados de data/matches.json -->
+        </select>
+        <select id="match-select" style="flex: 1.5; min-width: 220px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 13px; outline: none;">
+          <!-- Goles del paquete seleccionado -->
+        </select>
+        <button class="btn-gold" id="btn-load-match" style="padding: 8px 16px;">Cargar</button>
+      </div>
+      <div class="row" style="margin-top: 6px;">
+        <input type="text" id="yt-url" placeholder="O pega link manual de YouTube / Google Drive" />
+        <button class="btn-muted" id="load-yt" style="border: 1px solid var(--border-strong);">Manual</button>
       </div>
       <div class="video-frame" id="video-frame">
         <div class="play-dot">▶</div>

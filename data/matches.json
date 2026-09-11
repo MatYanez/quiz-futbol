@@ -1,0 +1,48 @@
+[
+  {
+    "pack": "Fútbol Chileno Histórico",
+    "matches": [
+      {
+        "id": "cl_001",
+        "title": "Superclásico 2017 - Sombrerito de Paredes",
+        "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "homeTeam": "Colo-Colo",
+        "awayTeam": "U. de Chile",
+        "scorer": "Esteban Paredes",
+        "score": "4-1"
+      },
+      {
+        "id": "cl_002",
+        "title": "Final Sudamericana 2006 - Chupete en México",
+        "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "homeTeam": "Pachuca",
+        "awayTeam": "Colo-Colo",
+        "scorer": "Humberto Suazo",
+        "score": "1-1"
+      }
+    ]
+  },
+  {
+    "pack": "Grandes Noches Europeas",
+    "matches": [
+      {
+        "id": "eu_001",
+        "title": "Final Champions 2002 - Volea histórica",
+        "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "homeTeam": "Real Madrid",
+        "awayTeam": "Bayer Leverkusen",
+        "scorer": "Zinedine Zidane",
+        "score": "2-1"
+      },
+      {
+        "id": "eu_002",
+        "title": "Champions 2005 - Golazo de punterazo",
+        "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "homeTeam": "Chelsea",
+        "awayTeam": "Barcelona",
+        "scorer": "Ronaldinho",
+        "score": "4-2"
+      }
+    ]
+  }
+]
