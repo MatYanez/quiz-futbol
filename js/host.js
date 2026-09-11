@@ -6,11 +6,15 @@ let roomsData = {};
 let players = {};
 let round = 1;
 let revealed = false;
-let blurAmount = 4;
+let blurAmount = 1.5; // Muy sutil, solo para suavizar bordes de texto
 let qrInstance = null;
-// Filtro Táctico Monocromo: 100% escala de grises + tinte esmeralda oscuro de visión táctica
-// Neutraliza colores de camisetas (rojo, azul, verde, etc.) dejando solo contraste de siluetas
-const ANON_COLOR = 'grayscale(1) sepia(0.8) hue-rotate(95deg) contrast(1.7) brightness(0.9)';
+
+// Filtro Espectral Invertido (Cámara Negativa / Azul-Magenta Neón):
+// 1. invert(1): Blancos pasan a negros, pasto pasa a púrpura/magenta
+// 2. hue-rotate(190deg): Vira todo hacia tonos cian, azul profundo y rosado antinatural
+// 3. contrast(2.3) + brightness(1.1): Hace destacar el balón y las siluetas sin revelar logos
+// 4. drop-shadow: Desfasa bordes ópticos para que los dorsales y caras no se puedan leer
+const ANON_COLOR = 'invert(1) hue-rotate(190deg) contrast(2.3) brightness(1.05) drop-shadow(2px 0px 1px rgba(255, 0, 128, 0.7)) drop-shadow(-2px 0px 1px rgba(0, 255, 255, 0.7))';
 const CAT_PTS = { jugador: 3, partido: 2, marcador: 1 };
 
 function currentFilter() {
