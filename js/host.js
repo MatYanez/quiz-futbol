@@ -380,7 +380,6 @@ async function saveAssign() {
     const gain = gainsSnapshot[pid] || 0;
     const currentScore = p.score || 0;
     updates[`rooms/${ROOM_ID}/players/${pid}/score`] = currentScore + gain;
-    // Actualizar localmente de inmediato para que la animación no dependa del lag de red
     p.score = currentScore + gain;
   });
 
@@ -409,7 +408,7 @@ async function saveAssign() {
     return itemHtml(p, newIdx, deltaHtml, floaterHtml);
   }).join('');
 
-  // 4. Ejecutar la animación FLIP (desplazamiento físico de las tarjetas)
+  // 4. Ejecutar la animación FLIP
   requestAnimationFrame(() => {
     document.querySelectorAll('#sidebar-list .rank-row').forEach(newEl => {
       const pid = newEl.dataset.pid;
@@ -430,6 +429,16 @@ async function saveAssign() {
       }
     });
   });
+
+  // Habilitar el botón de Siguiente Jugada ahora que los puntos están asignados
+  const nextBtn = document.getElementById('next-video-btn');
+  if (nextBtn) {
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    nextBtn.style.cursor = 'pointer';
+    nextBtn.classList.remove('btn-muted');
+    nextBtn.classList.add('btn-gold', 'ready-pulse');
+  }
 
   // 5. Enviar actualización a Firebase en segundo plano
   await update(ref(db), updates);
@@ -524,23 +533,36 @@ function loadMatchAtIndex(index) {
 }
 
 function nextVideo() {
-  round += 1;
-  document.getElementById('round-num').textContent = round;
-  revealed = false;
-  document.getElementById('video-data-card').classList.remove('is-revealed');
-  refreshMediaFilter();
+  const nextBtn = document.getElementById('next-video-btn');
+  if (nextBtn && nextBtn.disabled) return;
 
-  // Avanzar a la siguiente jugada de la lista aleatoria
-  if (currentPlaylistIndex + 1 < roomPlaylist.length) {
-    loadMatchAtIndex(currentPlaylistIndex + 1);
-  } else {
-    showNotification({
+  // Comprobar si quedan jugadas en el paquete
+  if (currentPlaylistIndex + 1 >= roomPlaylist.length) {
+    return showNotification({
       title: '¡Fin del paquete!',
-      message: 'Se han jugado todos los videos de esta temática.',
+      message: 'Ya se jugaron todos los videos de esta temática.',
       icon: '🏁'
     });
   }
 
+  round += 1;
+  document.getElementById('round-num').textContent = round;
+  revealed = false;
+  refreshMediaFilter();
+
+  // Volver a bloquear el botón de siguiente jugada para la nueva ronda
+  if (nextBtn) {
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.35';
+    nextBtn.style.cursor = 'not-allowed';
+    nextBtn.classList.remove('btn-gold', 'ready-pulse');
+    nextBtn.classList.add('btn-muted');
+  }
+
+  // Cargar el siguiente video aleatorio
+  loadMatchAtIndex(currentPlaylistIndex + 1);
+
+  // Limpiar estados de jugadores en Firebase para la nueva ronda
   const updates = {};
   updates[`rooms/${ROOM_ID}/round`] = round;
   updates[`rooms/${ROOM_ID}/revealed`] = false;
