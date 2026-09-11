@@ -538,15 +538,16 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
 .video-censor-badge {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-family: 'Oswald', sans-serif;
-  font-size: 11px;
-  letter-spacing: 1px;
-  color: var(--gold);
-  text-transform: uppercase;
+    background: rgb(0 0 0);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 18px 10px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 31px;
+    letter-spacing: 1px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-top: 2rem;
 }
 
 /* Tapa la barra de progreso inferior de YouTube */
