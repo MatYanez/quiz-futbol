@@ -207,10 +207,20 @@ window.adjustScore = function(team, delta) {
 };
 
 window.sendAnswer = async function() {
-  const scorer = document.getElementById('answer-scorer').value.trim();
+  const country = (document.getElementById('answer-country')?.value || '').trim();
+  const scorer = (document.getElementById('answer-scorer')?.value || '').trim();
+
+  if (!country) {
+    return showNotification({
+      title: 'Falta el país',
+      message: 'Debes seleccionar qué selección o país anotó el gol.',
+      icon: '🌍'
+    });
+  }
+
   if (!scorer) {
     return showNotification({
-      title: 'Respuesta vacía',
+      title: 'Falta el goleador',
       message: 'Debes indicar quién fue el jugador que anotó el gol.',
       icon: '⚽'
     });
@@ -218,7 +228,12 @@ window.sendAnswer = async function() {
 
   update(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {
     submitted: true,
-    lastAnswer: { scorer, home: homeScore, away: awayScore }
+    lastAnswer: { 
+      country, 
+      scorer, 
+      home: homeScore, 
+      away: awayScore 
+    }
   });
 
   document.getElementById('form-container').style.display = 'none';

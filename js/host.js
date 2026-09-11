@@ -8,7 +8,15 @@ let round = 1;
 let revealed = false;
 let distortionLevel = 3;
 let qrInstance = null;
-const CAT_PTS = { jugador: 3, partido: 2, marcador: 1 };
+const CAT_PTS = { pais: 1, jugador: 3, marcador: 2 };
+
+// Normaliza marcadores ordenando los goles numéricamente (ej: "2-1" -> "1-2", "1-2" -> "1-2")
+function normalizeScore(scoreStr) {
+  if (!scoreStr) return '';
+  const parts = scoreStr.toString().replace(/\s+/g, '').split(/[-–:]/).map(n => parseInt(n, 10));
+  if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return '';
+  return parts.sort((a, b) => a - b).join('-');
+}
 
 function currentFilter() {
   if (revealed) return 'none';
@@ -271,21 +279,19 @@ function syncReviewVideo() {
   targetBox.innerHTML = '';
 
   if (sourceMedia && sourceMedia.src) {
-    // Al pasar al modal de revisión, quitamos el mute=1 y el controls=0 para que se escuche el relato oficial
     let reviewSrc = sourceMedia.src.replace('mute=1', 'mute=0').replace('controls=0', 'controls=1');
     targetBox.innerHTML = `<iframe src="${reviewSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: none; width: 100%; height: 100%; border-radius: 8px; border: none;"></iframe>`;
   } else {
     targetBox.innerHTML = '<p class="empty" style="padding-top: 50px;">No hay video cargado</p>';
   }
 
-  const loc = document.getElementById('v-local').value.trim() || 'Local';
-  const vis = document.getElementById('v-visita').value.trim() || 'Visita';
+  const pais = document.getElementById('v-pais').value.trim() || 'No especificado';
   const jug = document.getElementById('v-jugador').value.trim() || 'No especificado';
   const marc = document.getElementById('v-marcador').value.trim() || '0-0';
 
+  document.getElementById('ref-pais').textContent = pais;
   document.getElementById('ref-jugador').textContent = jug;
   document.getElementById('ref-marcador').textContent = marc;
-  document.getElementById('ref-partido').textContent = `${loc} vs ${vis}`;
 }
 
 let calculatedGains = {};
@@ -294,20 +300,24 @@ function renderAssignRows() {
   const container = document.getElementById('assign-table-body');
   const playerList = Object.values(players);
 
+  const officialCountry = cleanString(document.getElementById('v-pais').value);
   const officialScorer = cleanString(document.getElementById('v-jugador').value);
-  const officialScore = cleanString(document.getElementById('v-marcador').value).replace(/\s+/g, '');
+  const officialScoreNorm = normalizeScore(document.getElementById('v-marcador').value);
 
   calculatedGains = {};
 
   container.innerHTML = playerList.map(p => {
-    const last = p.lastAnswer || { scorer: 'Sin respuesta', home: 0, away: 0 };
+    const last = p.lastAnswer || { country: 'Sin selección', scorer: 'Sin respuesta', home: 0, away: 0 };
+    const playerCountry = cleanString(last.country);
     const playerScorer = cleanString(last.scorer);
-    const playerScoreStr = `${last.home}-${last.away}`;
+    const playerScoreNorm = normalizeScore(`${last.home}-${last.away}`);
 
+    const hitCountry = officialCountry.length > 1 && officialCountry === playerCountry;
     const hitScorer = officialScorer.length > 2 && (officialScorer.includes(playerScorer) || playerScorer.includes(officialScorer));
-    const hitScore = officialScore.length >= 3 && officialScore === playerScoreStr;
+    const hitScore = officialScoreNorm && officialScoreNorm === playerScoreNorm;
 
     let gain = 0;
+    if (hitCountry) gain += CAT_PTS.pais;
     if (hitScorer) gain += CAT_PTS.jugador;
     if (hitScore) gain += CAT_PTS.marcador;
 
@@ -320,12 +330,16 @@ function renderAssignRows() {
           <span>${p.name}</span>
         </div>
         <div class="cell-val">
+          <span class="badge-hit ${hitCountry ? 'yes' : 'no'}">${hitCountry ? '✓' : '✕'}</span>
+          <span>${last.country || '---'}</span>
+        </div>
+        <div class="cell-val">
           <span class="badge-hit ${hitScorer ? 'yes' : 'no'}">${hitScorer ? '✓' : '✕'}</span>
-          <span>${last.scorer}</span>
+          <span>${last.scorer || '---'}</span>
         </div>
         <div class="cell-val">
           <span class="badge-hit ${hitScore ? 'yes' : 'no'}">${hitScore ? '✓' : '✕'}</span>
-          <span>${last.home} - ${last.away}</span>
+          <span>${last.home !== undefined ? `${last.home}-${last.away}` : '---'}</span>
         </div>
         <div class="cell-pts-gain">
           +${gain}
@@ -511,9 +525,8 @@ function loadMatchAtIndex(index) {
   // Actualizar contador visual
   document.getElementById('pack-progress').textContent = `${index + 1}/${roomPlaylist.length}`;
 
-  // Cargar datos oficiales secretos
-  document.getElementById('v-local').value = match.homeTeam || '';
-  document.getElementById('v-visita').value = match.awayTeam || '';
+// Cargar datos oficiales secretos de la edición Mundial
+  document.getElementById('v-pais').value = match.country || '';
   document.getElementById('v-jugador').value = match.scorer || '';
   document.getElementById('v-marcador').value = match.score || '';
 

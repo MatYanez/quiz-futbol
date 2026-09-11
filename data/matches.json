@@ -1,15 +1,22 @@
 [
   {
-    "pack": "Fútbol Chileno Histórico",
+    "pack": "Copas del Mundo Históricas",
     "matches": [
       {
-        "id": "cl_001",
-        "title": "Superclásico 2017 - Sombrerito de Paredes",
-        "videoUrl": "https://www.youtube.com/watch?v=-bS2RhP0w7k",
-        "homeTeam": "Colo-Colo",
-        "awayTeam": "U. de Chile",
-        "scorer": "Esteban Paredes",
-        "score": "4-1"
+        "id": "wc_001",
+        "title": "Final 2018 - Bombazo de Mbappé",
+        "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "country": "Francia",
+        "scorer": "Kylian Mbappé",
+        "score": "4-2"
+      },
+      {
+        "id": "wc_002",
+        "title": "Final 2014 - Gol en el alargue",
+        "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "country": "Alemania",
+        "scorer": "Mario Götze",
+        "score": "1-0"
       }
     ]
   }

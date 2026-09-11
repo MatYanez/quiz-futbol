@@ -42,10 +42,33 @@
       <div class="round-pill" id="round-badge">Ronda 1</div>
     </div>
 
-    <div id="form-container">
+<div id="form-container">
+      <!-- 1. PAÍS (1 PT) -->
+      <div class="card">
+        <label style="margin-bottom: 8px;">1. ¿Qué país anotó? (+1 pt)</label>
+        <select id="answer-country" style="width: 100%; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 8px; padding: 12px; color: var(--text); font-size: 15px; outline: none;">
+          <option value="">Selecciona la selección...</option>
+          <option value="Alemania">🇩🇪 Alemania</option>
+          <option value="Argentina">🇦🇷 Argentina</option>
+          <option value="Brasil">🇧🇷 Brasil</option>
+          <option value="Chile">🇨🇱 Chile</option>
+          <option value="Colombia">🇨🇴 Colombia</option>
+          <option value="Croacia">🇭🇷 Croacia</option>
+          <option value="España">🇪🇸 España</option>
+          <option value="Francia">🇫🇷 Francia</option>
+          <option value="Inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</option>
+          <option value="Italia">🇮🇹 Italia</option>
+          <option value="México">🇲🇽 México</option>
+          <option value="Países Bajos">🇳🇱 Países Bajos</option>
+          <option value="Portugal">🇵🇹 Portugal</option>
+          <option value="Uruguay">🇺🇾 Uruguay</option>
+        </select>
+      </div>
+
+      <!-- 2. GOLEADOR (3 PTS) -->
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="margin-bottom: 0;">¿Quién hizo el gol?</label>
+          <label style="margin-bottom: 0;">2. ¿Quién hizo el gol? (+3 pts)</label>
           <button type="button" class="chip-search" onclick="openSearchModal()">🔍 Buscar...</button>
         </div>
         <div class="input-wrap">
@@ -54,11 +77,13 @@
         </div>
       </div>
 
+      <!-- 3. MARCADOR FINAL (2 PTS) -->
       <div class="card">
-        <label style="text-align: center;">Marcador Final</label>
+        <label style="text-align: center; margin-bottom: 2px;">3. Marcador Final (+2 pts)</label>
+        <p style="text-align: center; font-size: 11px; color: var(--text-muted); margin: 0 0 10px 0;">El orden da igual (ej: 2-1 y 1-2 valen lo mismo)</p>
         <div class="score-board">
           <div class="team-counter">
-            <span class="team-label">Local</span>
+            <span class="team-label">Goles A</span>
             <div class="stepper">
               <div class="step-btn" onclick="adjustScore('home', -1)">-</div>
               <div class="step-val" id="val-home">0</div>
@@ -66,10 +91,10 @@
             </div>
           </div>
 
-          <span class="vs-badge">VS</span>
+          <span class="vs-badge">-</span>
 
           <div class="team-counter">
-            <span class="team-label">Visita</span>
+            <span class="team-label">Goles B</span>
             <div class="stepper">
               <div class="step-btn" onclick="adjustScore('away', -1)">-</div>
               <div class="step-val" id="val-away">0</div>

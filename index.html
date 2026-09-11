@@ -71,9 +71,8 @@
         <input type="range" id="distortion-slider" min="1" max="8" value="3" />
         <span id="distortion-value">Nivel 3</span>
       </div>
-<!-- Datos de control internos (ocultos, se leen directo en el modal de revisión) -->
-      <input type="hidden" id="v-local" />
-      <input type="hidden" id="v-visita" />
+<!-- Datos de control internos para Mundial -->
+      <input type="hidden" id="v-pais" />
       <input type="hidden" id="v-jugador" />
       <input type="hidden" id="v-marcador" />
 
@@ -104,18 +103,18 @@
     <div class="review-horizontal-layout">
       <!-- Columna 1: Caja con respuesta oficial arriba + Video abajo -->
       <div class="review-col-video">
-        <div class="official-answer-card">
+<div class="official-answer-card">
+          <div class="official-item">
+            <span class="official-label">País que anota</span>
+            <span class="official-val" id="ref-pais">---</span>
+          </div>
           <div class="official-item">
             <span class="official-label">Goleador Oficial</span>
             <span class="official-val" id="ref-jugador">---</span>
           </div>
           <div class="official-item">
-            <span class="official-label">Marcador Real</span>
+            <span class="official-label">Marcador Final</span>
             <span class="official-val" id="ref-marcador">---</span>
-          </div>
-          <div class="official-item">
-            <span class="official-label">Partido</span>
-            <span class="official-val" id="ref-partido">---</span>
           </div>
         </div>
 
@@ -126,11 +125,12 @@
 
       <!-- Columna 2: Tabla de Jugadores vs Predicciones -->
       <div class="review-col-players">
-        <div class="review-table-header">
+<div class="review-table-header">
           <span>Jugador</span>
-          <span>Goleador dicho</span>
-          <span>Marcador</span>
-          <span style="text-align: right;">Pts</span>
+          <span>País (1p)</span>
+          <span>Goleador (3p)</span>
+          <span>Marcador (2p)</span>
+          <span style="text-align: right;">Total</span>
         </div>
         <div class="review-table-body" id="assign-table-body"></div>
       </div>
