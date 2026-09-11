@@ -33,34 +33,41 @@ if (savedNick) {
 let DB_PLAYERS = [];
 const DEFAULT_PLAYER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239FBBAA'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z'/%3E%3C/svg%3E";
 
-// Cargar la base de datos de jugadores y sincronizar países
+// Cargar la base de datos de jugadores respetando el select del HTML
 async function loadPlayersDatabase() {
   try {
     const res = await fetch('data/players.json');
     const data = await res.json();
-    // Soporta formato plano [ {...} ] o estructurado { players: [...], countries: [...] }
     DB_PLAYERS = Array.isArray(data) ? data : (data.players || []);
     initDropdownData();
-    populateMainCountrySelect();
+    bindCountrySelectListener();
   } catch (err) {
     DB_PLAYERS = [];
   }
 }
 loadPlayersDatabase();
 
-function populateMainCountrySelect() {
+function bindCountrySelectListener() {
   const select = document.getElementById('answer-country');
   if (!select) return;
-  const countries = [...new Set(DB_PLAYERS.map(p => p.country).filter(Boolean))].sort();
-  select.innerHTML = '<option value="">Selecciona la selección...</option>' +
-    countries.map(c => `<option value="${c}">${c}</option>`).join('');
 
   select.addEventListener('change', () => {
-    // Al cambiar país, limpiar el input de goleador previo
+    // 1. Limpiar el input de goleador si cambió de país
     const scorerInput = document.getElementById('answer-scorer');
     if (scorerInput) scorerInput.value = '';
+    
+    // 2. Cerrar sugerencias abiertas
     const box = document.getElementById('suggestions-box');
-    if (box) box.style.display = 'none';
+    if (box) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+    }
+
+    // 3. Sincronizar de inmediato con el filtro del modal
+    const modalCountryInput = document.getElementById('modal-filter-country');
+    if (modalCountryInput) {
+      modalCountryInput.value = select.value.trim();
+    }
   });
 }
 
@@ -324,10 +331,11 @@ window.selectDropdownOption = function(inputId, dropdownId, value) {
 window.openSearchModal = function() {
   initDropdownData();
 
-  // Si ya marcó un país en el paso 1, rellenar el filtro del modal
-  const selectedCountry = document.getElementById('answer-country')?.value || '';
+  // Lee el país seleccionado actualmente en el paso 1
+  const selectedCountry = (document.getElementById('answer-country')?.value || '').trim();
   const modalCountryInput = document.getElementById('modal-filter-country');
-  if (modalCountryInput && selectedCountry) {
+
+  if (modalCountryInput) {
     modalCountryInput.value = selectedCountry;
   }
 
@@ -340,7 +348,6 @@ window.closeSearchModal = function() {
   document.getElementById('search-modal').classList.remove('open');
 };
 
-// Función para mezclar un arreglo aleatoriamente (Fisher-Yates)
 function shuffleArray(arr) {
   const copy = [...arr];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -370,14 +377,16 @@ window.handleTypingScorer = function(val) {
     return; 
   }
 
-  // Si ya seleccionó país en el paso 1, priorizar a los jugadores de esa selección
+  // País seleccionado en el paso 1
   const selectedCountry = (document.getElementById('answer-country')?.value || '').trim().toLowerCase();
 
   const matches = [];
   for (let i = 0; i < DB_PLAYERS.length; i++) {
     const p = DB_PLAYERS[i];
     const matchCountry = selectedCountry ? (p.country && p.country.toLowerCase() === selectedCountry) : true;
-    if (matchCountry && p.name && p.name.toLowerCase().includes(query)) {
+    const matchName = p.name && p.name.toLowerCase().includes(query);
+
+    if (matchCountry && matchName) {
       matches.push(p);
       if (matches.length >= 30) break;
     }
@@ -430,16 +439,17 @@ window.handleTypingScorer = function(val) {
 };
 
 window.filterModalPlayers = function() {
-  const country = document.getElementById('modal-filter-country').value.trim().toLowerCase();
-  const team = document.getElementById('modal-filter-team').value.trim().toLowerCase();
-  const text = document.getElementById('modal-search-text').value.trim().toLowerCase();
+  const country = (document.getElementById('modal-filter-country')?.value || '').trim().toLowerCase();
+  const team = (document.getElementById('modal-filter-team')?.value || '').trim().toLowerCase();
+  const text = (document.getElementById('modal-search-text')?.value || '').trim().toLowerCase();
 
   const list = document.getElementById('modal-results-list');
   const countBadge = document.getElementById('results-count');
 
+  // Si hay país fijado, mostramos directamente a sus futbolistas sin exigir texto
   if (!country && !team && text.length < 2) {
     countBadge.textContent = '0';
-    list.innerHTML = '<p style="grid-column: span 2; color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">Escribe al menos 2 letras o selecciona un filtro.</p>';
+    list.innerHTML = '<p style="grid-column: span 2; color: var(--text-muted); text-align:center; font-size: 13px; margin: 20px 0;">Selecciona una selección o escribe al menos 2 letras.</p>';
     return;
   }
 
