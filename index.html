@@ -71,24 +71,14 @@
         <input type="range" id="blur-slider" min="0" max="24" value="10" />
         <span id="blur-value">10px</span>
       </div>
+<!-- Datos de control internos (ocultos, se leen directo en el modal de revisión) -->
+      <input type="hidden" id="v-local" />
+      <input type="hidden" id="v-visita" />
+      <input type="hidden" id="v-jugador" />
+      <input type="hidden" id="v-marcador" />
 
-      <div class="card video-data" id="video-data-card">
-        <p class="section-label">Datos del video</p>
-        <div class="field-grid">
-          <div><label>Equipo local</label><input type="text" id="v-local" placeholder="Ej: Colo-Colo" /></div>
-          <div><label>Equipo visitante</label><input type="text" id="v-visita" placeholder="Ej: U. de Chile" /></div>
-          <div><label>Jugador que anotó</label><input type="text" id="v-jugador" placeholder="Nombre del jugador" /></div>
-          <div><label>Marcador final</label><input type="text" id="v-marcador" placeholder="Ej: 2-1" /></div>
-        </div>
-        <div class="reveal-overlay">
-          <span>🔒</span>
-          <span>Presiona "Revelar video"</span>
-        </div>
-      </div>
-
-      <div class="actions-row">
-        <button class="btn-gold btn-block" id="reveal-btn">Esperando respuestas</button>
-        <button class="btn-block btn-muted" id="next-video-btn">Siguiente video</button>
+      <div class="actions-row" style="margin-top: 14px;">
+        <button class="btn-block btn-muted" id="next-video-btn" style="padding: 14px; font-size: 15px;">⏭ Siguiente jugada</button>
       </div>
     </div>
 

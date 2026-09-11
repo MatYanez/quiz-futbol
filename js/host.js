@@ -124,26 +124,21 @@ function checkAllSubmitted() {
   const playerArray = Object.values(players);
   const total = playerArray.length;
   const submitted = playerArray.filter(p => p.submitted).length;
-  const btnReveal = document.getElementById('reveal-btn');
   const btnAssign = document.getElementById('open-assign');
   const allReady = total > 0 && submitted === total;
   
   if (allReady) {
-    btnReveal.disabled = false;
-    btnReveal.textContent = `Revelar video (${submitted}/${total} listos)`;
-    btnReveal.classList.add('ready-pulse');
-
     btnAssign.disabled = false;
     btnAssign.style.opacity = '1';
     btnAssign.style.cursor = 'pointer';
+    btnAssign.textContent = `Asignar puntos (${submitted}/${total} listos)`;
+    btnAssign.classList.add('ready-pulse');
   } else {
-    btnReveal.disabled = true;
-    btnReveal.textContent = `Esperando respuestas (${submitted}/${total})`;
-    btnReveal.classList.remove('ready-pulse');
-
     btnAssign.disabled = true;
     btnAssign.style.opacity = '0.4';
     btnAssign.style.cursor = 'not-allowed';
+    btnAssign.textContent = `Esperando respuestas (${submitted}/${total})`;
+    btnAssign.classList.remove('ready-pulse');
   }
 }
 
@@ -607,7 +602,6 @@ document.getElementById('open-assign').addEventListener('click', openAssign);
 document.getElementById('close-assign').addEventListener('click', closeAssignOnly);
 document.getElementById('save-assign').addEventListener('click', saveAssign);
 document.getElementById('assign-modal').addEventListener('click', (e) => { if (e.target.id === 'assign-modal') closeAssignOnly(); });
-document.getElementById('reveal-btn').addEventListener('click', toggleReveal);
 document.getElementById('next-video-btn').addEventListener('click', nextVideo);
 
 loadMatchesDatabase();
