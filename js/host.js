@@ -529,9 +529,10 @@ function loadMatchAtIndex(index) {
     embedSrc = `https://drive.google.com/file/d/${driveId}/preview`;
   }
 
-  if (embedSrc) {
+if (embedSrc) {
     frame.classList.add('has-video');
     frame.innerHTML = `
+      <div class="video-shield-overlay" title="Video bloqueado durante la ronda"></div>
       <div class="video-censor-top">
         <span class="video-censor-badge">⚽ Jugada en misterio</span>
       </div>
