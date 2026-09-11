@@ -567,34 +567,6 @@ function getDriveId(url) {
   return match ? match[1] : null;
 }
 
-function loadYouTube() {
-  const input = document.getElementById('yt-url');
-  const raw = input.value.trim();
-  const ytId = getYouTubeId(raw);
-  const driveId = getDriveId(raw);
-  const frame = document.getElementById('video-frame');
-  let embedSrc = null;
-  if (ytId) embedSrc = `https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`;
-  else if (driveId) embedSrc = `https://drive.google.com/file/d/${driveId}/preview`;
-
-  if (!embedSrc) {
-    input.style.borderColor = 'var(--red)';
-    setTimeout(() => { input.style.borderColor = ''; }, 1200);
-    return;
-  }
-
-  frame.classList.add('has-video');
-  frame.innerHTML = `
-    <iframe src="${embedSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: ${currentFilter()}"></iframe>
-    <button class="swap-video-btn" id="swap-video">Cambiar video</button>
-  `;
-  document.getElementById('swap-video').addEventListener('click', (e) => {
-    e.stopPropagation();
-    frame.classList.remove('has-video');
-    frame.innerHTML = `<div class="play-dot">▶</div><p>Haz clic para cargar un video y probar cómo se ve</p>`;
-  });
-  input.value = '';
-}
 
 function setupVideoFrame() {
   const frame = document.getElementById('video-frame');
@@ -635,8 +607,6 @@ document.getElementById('open-assign').addEventListener('click', openAssign);
 document.getElementById('close-assign').addEventListener('click', closeAssignOnly);
 document.getElementById('save-assign').addEventListener('click', saveAssign);
 document.getElementById('assign-modal').addEventListener('click', (e) => { if (e.target.id === 'assign-modal') closeAssignOnly(); });
-document.getElementById('load-yt').addEventListener('click', loadYouTube);
-document.getElementById('yt-url').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadYouTube(); });
 document.getElementById('reveal-btn').addEventListener('click', toggleReveal);
 document.getElementById('next-video-btn').addEventListener('click', nextVideo);
 
