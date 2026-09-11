@@ -6,9 +6,10 @@ let roomsData = {};
 let players = {};
 let round = 1;
 let revealed = false;
-let blurAmount = 10;
+let blurAmount = 4;
 let qrInstance = null;
-const ANON_COLOR = 'grayscale(1) sepia(1) hue-rotate(268deg) saturate(9) contrast(1.4) brightness(1.05)';
+// Filtro estilo silueta deportiva: resalta el movimiento de los jugadores sin revelar rostros ni letras
+const ANON_COLOR = 'grayscale(0.8) contrast(1.8) brightness(0.9) saturate(2)';
 const CAT_PTS = { jugador: 3, partido: 2, marcador: 1 };
 
 function currentFilter() {
@@ -517,18 +518,27 @@ function loadMatchAtIndex(index) {
   document.getElementById('v-jugador').value = match.scorer || '';
   document.getElementById('v-marcador').value = match.score || '';
 
-  // Cargar embed con difuminado
+  // Inyectar mute=1, controls=0 y modestbranding para ocultar audio y controles delatanes
   const ytId = getYouTubeId(match.videoUrl);
   const driveId = getDriveId(match.videoUrl);
   const frame = document.getElementById('video-frame');
   let embedSrc = null;
 
-  if (ytId) embedSrc = `https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1&autoplay=1`;
-  else if (driveId) embedSrc = `https://drive.google.com/file/d/${driveId}/preview`;
+  if (ytId) {
+    embedSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`;
+  } else if (driveId) {
+    embedSrc = `https://drive.google.com/file/d/${driveId}/preview`;
+  }
 
   if (embedSrc) {
     frame.classList.add('has-video');
-    frame.innerHTML = `<iframe src="${embedSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: ${currentFilter()}"></iframe>`;
+    frame.innerHTML = `
+      <div class="video-censor-top">
+        <span class="video-censor-badge">⚽ Jugada en misterio</span>
+      </div>
+      <iframe src="${embedSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: ${currentFilter()}"></iframe>
+      <div class="video-censor-bottom"></div>
+    `;
   }
 }
 
@@ -609,6 +619,13 @@ function setupVideoFrame() {
 
 function setupBlurSlider() {
   const slider = document.getElementById('blur-slider');
+  if (!slider) return;
+  // Ajustamos el rango: de 1px (casi nítido) a 10px (máximo razonable para siluetas)
+  slider.min = "1";
+  slider.max = "10";
+  slider.value = "4";
+  document.getElementById('blur-value').textContent = '4px';
+
   slider.addEventListener('input', () => {
     blurAmount = Number(slider.value);
     document.getElementById('blur-value').textContent = blurAmount + 'px';

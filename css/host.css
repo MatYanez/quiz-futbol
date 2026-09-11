@@ -515,3 +515,48 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   .review-grid { grid-template-columns: 1fr; }
   .modal-review-wide { max-height: 95vh; padding: 16px; }
 }
+
+/* --- OVERLAYS DE CENSURA (TÍTULO Y MARCADOR DE TV) --- */
+.video-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Tapa el título de YouTube y el marcador de TV en la esquina superior */
+.video-censor-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: linear-gradient(180deg, rgba(7, 24, 18, 0.98) 0%, rgba(7, 24, 18, 0.85) 60%, transparent 100%);
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.video-censor-badge {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* Tapa la barra de progreso inferior de YouTube */
+.video-censor-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(0deg, rgba(7, 24, 18, 0.95) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 5;
+}
