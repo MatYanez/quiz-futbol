@@ -164,6 +164,9 @@ function renderSetup() {
 window.createRoom = async function() {
   const input = document.getElementById('new-room-input');
   const code = input.value.trim().toUpperCase().replace(/\s+/g, '-');
+  const packSelect = document.getElementById('create-pack-select');
+  const packIndex = packSelect ? parseInt(packSelect.value, 10) : 0;
+
   if (!code) {
     return showNotification({
       title: 'Campo vacío',
@@ -175,6 +178,7 @@ window.createRoom = async function() {
   set(ref(db, `rooms/${code}`), {
     round: 1,
     revealed: false,
+    packIndex: packIndex,
     createdAt: Date.now()
   });
 
@@ -225,6 +229,10 @@ function startGame() {
   }
   document.getElementById('setup-view').style.display = 'none';
   document.getElementById('play-view').style.display = 'flex';
+  
+  // Barajar aleatoriamente las jugadas del paquete seleccionado sin repetir
+  initRoomPlaylist();
+
   checkAllSubmitted();
   renderSidebar();
 }
@@ -442,58 +450,70 @@ function toggleReveal() {
 
 
 
-// --- CARGA Y CONTROL DE PARTIDOS DESDE data/matches.json ---
+// --- GESTIÓN ALEATORIA DE PARTIDOS DESDE data/matches.json ---
 let MATCH_PACKS = [];
-let currentPackIndex = 0;
-let currentMatchIndex = 0;
+let roomPlaylist = [];
+let currentPlaylistIndex = 0;
 
 async function loadMatchesDatabase() {
   try {
     const res = await fetch('data/matches.json');
     MATCH_PACKS = await res.json();
-    initPackSelectors();
+    populateCreatePackSelect();
   } catch (err) {
     MATCH_PACKS = [];
   }
 }
 
-function initPackSelectors() {
-  const packSelect = document.getElementById('pack-select');
-  const matchSelect = document.getElementById('match-select');
-  if (!packSelect || !matchSelect || !MATCH_PACKS.length) return;
+function populateCreatePackSelect() {
+  const packSelect = document.getElementById('create-pack-select');
+  if (!packSelect || !MATCH_PACKS.length) return;
 
   packSelect.innerHTML = MATCH_PACKS.map((p, idx) => `
-    <option value="${idx}">${p.pack} (${p.matches.length} jugadas)</option>
-  `).join('');
-
-  updateMatchList(0);
-
-  packSelect.onchange = (e) => {
-    currentPackIndex = parseInt(e.target.value, 10);
-    updateMatchList(currentPackIndex);
-  };
-}
-
-function updateMatchList(packIdx) {
-  const matchSelect = document.getElementById('match-select');
-  const pack = MATCH_PACKS[packIdx];
-  if (!pack || !matchSelect) return;
-
-  matchSelect.innerHTML = pack.matches.map((m, idx) => `
-    <option value="${idx}">#${idx + 1} - ${m.title}</option>
+    <option value="${idx}">⚽ ${p.pack} (${p.matches.length} jugadas)</option>
   `).join('');
 }
 
-function applyMatchData(match) {
-  if (!match) return;
+function shuffleMatches(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
-  // Llenar datos secretos oficiales de forma automática
+function initRoomPlaylist() {
+  const roomData = roomsData[ROOM_ID] || {};
+  const packIdx = roomData.packIndex || 0;
+  const activePack = MATCH_PACKS[packIdx] || MATCH_PACKS[0];
+
+  if (!activePack || !activePack.matches.length) return;
+
+  document.getElementById('active-pack-title').textContent = activePack.pack;
+  
+  // Barajar jugadas para que salgan en orden aleatorio sin repetirse
+  roomPlaylist = shuffleMatches(activePack.matches);
+  currentPlaylistIndex = 0;
+
+  loadMatchAtIndex(0);
+}
+
+function loadMatchAtIndex(index) {
+  if (!roomPlaylist[index]) return;
+  const match = roomPlaylist[index];
+  currentPlaylistIndex = index;
+
+  // Actualizar contador visual
+  document.getElementById('pack-progress').textContent = `${index + 1}/${roomPlaylist.length}`;
+
+  // Cargar datos oficiales secretos
   document.getElementById('v-local').value = match.homeTeam || '';
   document.getElementById('v-visita').value = match.awayTeam || '';
   document.getElementById('v-jugador').value = match.scorer || '';
   document.getElementById('v-marcador').value = match.score || '';
 
-  // Montar video en el reproductor con el blur activo
+  // Cargar embed con difuminado
   const ytId = getYouTubeId(match.videoUrl);
   const driveId = getDriveId(match.videoUrl);
   const frame = document.getElementById('video-frame');
@@ -504,15 +524,7 @@ function applyMatchData(match) {
 
   if (embedSrc) {
     frame.classList.add('has-video');
-    frame.innerHTML = `
-      <iframe src="${embedSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: ${currentFilter()}"></iframe>
-      <button class="swap-video-btn" id="swap-video">Cambiar video</button>
-    `;
-    document.getElementById('swap-video').addEventListener('click', (e) => {
-      e.stopPropagation();
-      frame.classList.remove('has-video');
-      frame.innerHTML = `<div class="play-dot">▶</div><p>Haz clic para cargar un video y probar cómo se ve</p>`;
-    });
+    frame.innerHTML = `<iframe src="${embedSrc}" allow="autoplay; encrypted-media" allowfullscreen style="filter: ${currentFilter()}"></iframe>`;
   }
 }
 
@@ -523,18 +535,15 @@ function nextVideo() {
   document.getElementById('video-data-card').classList.remove('is-revealed');
   refreshMediaFilter();
 
-  // Avanzar al siguiente gol del paquete de forma automática
-  const currentPack = MATCH_PACKS[currentPackIndex];
-  if (currentPack && currentMatchIndex + 1 < currentPack.matches.length) {
-    currentMatchIndex += 1;
-    applyMatchData(currentPack.matches[currentMatchIndex]);
-    const matchSelect = document.getElementById('match-select');
-    if (matchSelect) matchSelect.value = currentMatchIndex;
+  // Avanzar a la siguiente jugada de la lista aleatoria
+  if (currentPlaylistIndex + 1 < roomPlaylist.length) {
+    loadMatchAtIndex(currentPlaylistIndex + 1);
   } else {
-    document.getElementById('v-local').value = '';
-    document.getElementById('v-visita').value = '';
-    document.getElementById('v-jugador').value = '';
-    document.getElementById('v-marcador').value = '';
+    showNotification({
+      title: '¡Fin del paquete!',
+      message: 'Se han jugado todos los videos de esta temática.',
+      icon: '🏁'
+    });
   }
 
   const updates = {};
@@ -630,18 +639,6 @@ document.getElementById('load-yt').addEventListener('click', loadYouTube);
 document.getElementById('yt-url').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadYouTube(); });
 document.getElementById('reveal-btn').addEventListener('click', toggleReveal);
 document.getElementById('next-video-btn').addEventListener('click', nextVideo);
-
-const btnLoadMatch = document.getElementById('btn-load-match');
-if (btnLoadMatch) {
-  btnLoadMatch.addEventListener('click', () => {
-    const pack = MATCH_PACKS[currentPackIndex];
-    const matchSelect = document.getElementById('match-select');
-    if (pack && matchSelect) {
-      currentMatchIndex = parseInt(matchSelect.value, 10);
-      applyMatchData(pack.matches[currentMatchIndex]);
-    }
-  });
-}
 
 loadMatchesDatabase();
 listenAllRooms();

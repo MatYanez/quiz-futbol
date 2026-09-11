@@ -20,9 +20,12 @@
 <!-- VISTA 1: EXPLORADOR DE SALAS -->
   <div id="browser-view" class="card setup-card">
     <label style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); font-family: 'Oswald';">Crear nueva sala</label>
-    <div class="row">
-      <input type="text" id="new-room-input" placeholder="Ej: CLASICO-2026" style="text-transform: uppercase;" />
-      <button class="btn-gold" id="create-room-btn">Crear</button>
+<div class="row" style="gap: 8px; flex-wrap: wrap;">
+      <input type="text" id="new-room-input" placeholder="Ej: CLASICO-2026" style="text-transform: uppercase; flex: 1; min-width: 160px;" />
+      <select id="create-pack-select" style="flex: 1.2; min-width: 200px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; outline: none;">
+        <!-- Se llena con los paquetes de data/matches.json -->
+      </select>
+      <button class="btn-gold" id="create-room-btn">Crear Sala</button>
     </div>
 
     <label style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-family: 'Oswald'; margin-top: 20px;">Salas activas disponibles</label>
@@ -53,18 +56,9 @@
 
   <div id="play-view">
     <div class="video-col">
-=<div class="row" style="gap: 8px; flex-wrap: wrap;">
-        <select id="pack-select" style="flex: 1; min-width: 180px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 13px; outline: none;">
-          <!-- Paquetes cargados de data/matches.json -->
-        </select>
-        <select id="match-select" style="flex: 1.5; min-width: 220px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 13px; outline: none;">
-          <!-- Goles del paquete seleccionado -->
-        </select>
-        <button class="btn-gold" id="btn-load-match" style="padding: 8px 16px;">Cargar</button>
-      </div>
-      <div class="row" style="margin-top: 6px;">
-        <input type="text" id="yt-url" placeholder="O pega link manual de YouTube / Google Drive" />
-        <button class="btn-muted" id="load-yt" style="border: 1px solid var(--border-strong);">Manual</button>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 6px 12px; background: var(--surface-2); border-radius: 8px; border: 1px solid var(--border);">
+        <span style="font-size: 12px; color: var(--text-muted);">Temática: <strong id="active-pack-title" style="color: var(--gold);">---</strong></span>
+        <span style="font-size: 12px; color: var(--text-muted);">Progreso: <strong id="pack-progress" style="color: var(--text);">0/0</strong></span>
       </div>
       <div class="video-frame" id="video-frame">
         <div class="play-dot">▶</div>
