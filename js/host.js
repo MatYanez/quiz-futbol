@@ -8,8 +8,9 @@ let round = 1;
 let revealed = false;
 let blurAmount = 4;
 let qrInstance = null;
-// Filtro estilo silueta deportiva: resalta el movimiento de los jugadores sin revelar rostros ni letras
-const ANON_COLOR = 'grayscale(0.8) contrast(1.8) brightness(0.9) saturate(2)';
+// Filtro Táctico Monocromo: 100% escala de grises + tinte esmeralda oscuro de visión táctica
+// Neutraliza colores de camisetas (rojo, azul, verde, etc.) dejando solo contraste de siluetas
+const ANON_COLOR = 'grayscale(1) sepia(0.8) hue-rotate(95deg) contrast(1.7) brightness(0.9)';
 const CAT_PTS = { jugador: 3, partido: 2, marcador: 1 };
 
 function currentFilter() {
@@ -647,3 +648,5 @@ loadMatchesDatabase();
 listenAllRooms();
 setupVideoFrame();
 setupBlurSlider();
+
+  // my
