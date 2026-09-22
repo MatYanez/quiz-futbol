@@ -18,6 +18,14 @@ function normalizeScore(scoreStr) {
   return parts.sort((a, b) => a - b).join('-');
 }
 
+// Renderiza el avatar del jugador: imagen circular si es URL, emoji si no
+function avatarHtml(avatar) {
+  if (avatar && /^https?:\/\//.test(avatar)) {
+    return `<img src="${avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+  }
+  return avatar || '⚽';
+}
+
 function currentFilter() {
   if (revealed) return 'none';
   const d = distortionLevel;
@@ -157,7 +165,7 @@ function renderSetup() {
   const playerArray = Object.values(players);
   list.innerHTML = playerArray.length ? playerArray.map(p => `
     <div class="setup-item">
-      <span>${p.avatar || '⚽'} ${p.name}</span>
+      <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:20px;height:20px;border-radius:50%;overflow:hidden;display:inline-flex;flex-shrink:0;">${avatarHtml(p.avatar)}</span> ${p.name}</span>
       <div style="display:flex; align-items:center; gap:8px;">
         <span style="font-size: 11px; color: var(--gold);">Conectado</span>
         <button class="kick-btn" onclick="window.kickPlayer('${p.id}')">Kick</button>
@@ -246,7 +254,7 @@ function itemHtml(p, i, deltaHtml = '', floaterHtml = '') {
   const statusLabel = p.submitted ? '<span class="status-dot done"></span> Listo' : '<span class="status-dot wait"></span> Pensando...';
   return `<div class="rank-row ${i === 0 && (p.score || 0) > 0 ? 'leader' : ''}" data-pid="${p.id}" style="position: relative;">
     <span class="rank-num">${i + 1}</span>
-    <div class="rank-avatar">${p.avatar || '⚽'}</div>
+    <div class="rank-avatar">${avatarHtml(p.avatar)}</div>
     <div class="rank-info">
       <div style="display: flex; align-items: center;">
         <span class="rank-name">${p.name}</span>

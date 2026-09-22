@@ -1,8 +1,10 @@
 import { db, ref, set, update, onValue } from "./firebase-config.js";
 import { showNotification } from "./modal.js";
 
-const ICONS = ['⚽', '🧤', '🏆', '🔥', '👑', '⚡'];
-let chosenAvatar = localStorage.getItem('ga_avatar') || ICONS[0];
+let AVATARS = [];
+let chosenAvatarId = localStorage.getItem('ga_avatarId') || null;
+let chosenAvatar = localStorage.getItem('ga_avatar') || '';
+let takenAvatarIds = new Set();
 let homeScore = 0;
 let awayScore = 0;
 let currentRound = 1;
@@ -22,6 +24,10 @@ let currentRoom = (urlParams.get('room') || localStorage.getItem('ga_room') || '
 const roomInput = document.getElementById('player-room');
 if (roomInput) {
   roomInput.value = currentRoom;
+  roomInput.addEventListener('input', () => {
+    const r = roomInput.value.trim().toUpperCase();
+    if (r) watchTakenAvatars(r);
+  });
 }
 
 const savedNick = localStorage.getItem('ga_nick');
@@ -71,23 +77,65 @@ function bindCountrySelectListener() {
   });
 }
 
-// Avatares
-const avatarGrid = document.getElementById('mobile-avatars');
-avatarGrid.innerHTML = ICONS.map(i => `
-  <div class="avatar-card ${i === chosenAvatar ? 'active' : ''}" data-icon="${i}">${i}</div>
-`).join('');
+// Avatares: carrusel de fotos circulares con exclusión en tiempo real
+async function loadAvatarsDatabase() {
+  try {
+    const res = await fetch('data/avatars.json');
+    AVATARS = await res.json();
+  } catch (err) {
+    AVATARS = [];
+  }
+  renderAvatarCarousel();
+}
+loadAvatarsDatabase();
 
-avatarGrid.querySelectorAll('.avatar-card').forEach(card => {
-  card.addEventListener('click', () => {
-    chosenAvatar = card.dataset.icon;
-    avatarGrid.querySelectorAll('.avatar-card').forEach(el => el.classList.toggle('active', el.dataset.icon === chosenAvatar));
+function renderAvatarCarousel() {
+  const carousel = document.getElementById('mobile-avatars');
+  if (!carousel) return;
+  carousel.innerHTML = AVATARS.map(a => {
+    const isTaken = takenAvatarIds.has(a.id) && a.id !== chosenAvatarId;
+    const isActive = a.id === chosenAvatarId;
+    return `
+      <div class="avatar-orb ${isActive ? 'active' : ''} ${isTaken ? 'taken' : ''}" data-id="${a.id}" data-url="${a.url}">
+        <img src="${a.url}" alt="avatar" />
+        ${isTaken ? '<span class="avatar-orb-lock">🔒</span>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  carousel.querySelectorAll('.avatar-orb:not(.taken)').forEach(orb => {
+    orb.addEventListener('click', () => {
+      chosenAvatarId = orb.dataset.id;
+      chosenAvatar = orb.dataset.url;
+      localStorage.setItem('ga_avatarId', chosenAvatarId);
+      localStorage.setItem('ga_avatar', chosenAvatar);
+      renderAvatarCarousel();
+    });
   });
-});
+}
+
+let avatarsListenerRoom = null;
+function watchTakenAvatars(room) {
+  if (!room || avatarsListenerRoom === room) return;
+  avatarsListenerRoom = room;
+  onValue(ref(db, `rooms/${room}/players`), (snapshot) => {
+    const roomPlayers = snapshot.val() || {};
+    takenAvatarIds = new Set(
+      Object.values(roomPlayers)
+        .filter(p => p.id !== myPlayerId && p.avatarId)
+        .map(p => p.avatarId)
+    );
+    renderAvatarCarousel();
+  });
+}
+watchTakenAvatars(currentRoom);
 
 // Entrar a sala
 // Entrar a sala y sincronizar
 async function joinRoomSession(nick, room, isAutoReconnect = false) {
-  document.getElementById('current-avatar').textContent = chosenAvatar;
+  document.getElementById('current-avatar').innerHTML = chosenAvatar
+    ? `<img src="${chosenAvatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+    : '⚽';
   document.getElementById('current-name').textContent = nick;
 
   // Si no es reconexión automática, registramos al jugador en Firebase
@@ -96,6 +144,7 @@ async function joinRoomSession(nick, room, isAutoReconnect = false) {
       id: myPlayerId,
       name: nick,
       avatar: chosenAvatar,
+      avatarId: chosenAvatarId,
       score: 0,
       submitted: false,
       lastAnswer: null
@@ -200,6 +249,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (alreadyJoined && savedNick && savedRoom) {
     currentRoom = savedRoom;
     chosenAvatar = localStorage.getItem('ga_avatar') || chosenAvatar;
+    chosenAvatarId = localStorage.getItem('ga_avatarId') || chosenAvatarId;
     joinRoomSession(savedNick, savedRoom, true);
   }
 });
